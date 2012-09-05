@@ -10,3 +10,11 @@
 *.lai
 *.la
 *.a
+
+# Eclipse files
+.metadata
+.project
+.cproject
+
+# Mac OSX files
+.DS_Store 
