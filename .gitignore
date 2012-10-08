@@ -11,10 +11,15 @@
 *.la
 *.a
 
+# Compiled Java classes
+*.class
+
 # Eclipse files
 .metadata
 .project
 .cproject
+.classpath
+.settings
 
 # Mac OSX files
 .DS_Store 
