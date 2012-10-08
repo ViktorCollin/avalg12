@@ -13,6 +13,7 @@
 
 # Compiled Java classes
 *.class
+/bin
 
 # Eclipse files
 .metadata
