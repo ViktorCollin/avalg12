@@ -1,8 +1,10 @@
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+
 
 import java.math.BigInteger;
-import java.util.Vector;
+import java.util.Arrays;
 
 import org.junit.After;
 import org.junit.Before;
@@ -11,7 +13,7 @@ import org.junit.Test;
 
 public class factoringTests {
 	Factorizer f;
-	Vector<BigInteger> factors;
+	private static final int[] smallPrimes = {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97};
 
 	@Before
 	public void setUp() throws Exception {
@@ -20,58 +22,46 @@ public class factoringTests {
 
 	@After
 	public void tearDown() throws Exception {
+		
 	}
 
 	@Test
-	public void primeTest() {
-		// testing 2
-		factors = f.factor("2");
-		assertEquals(1,factors.size());
-		assertEquals(0, factors.get(0).compareTo(new BigInteger("2")));
-		// testing 7
-		factors = f.factor("7");
-		assertEquals(1,factors.size());
-		assertEquals(0, factors.get(0).compareTo(new BigInteger("7")));
-		// testing 911
-		factors = f.factor("911");
-		assertEquals(1,factors.size());
-		assertEquals(0, factors.get(0).compareTo(new BigInteger("911")));
+	public void smallPrimeTest() {
+		for(int i = 0;i<smallPrimes.length;i++){
+			BigInteger number = new BigInteger(Integer.toString(smallPrimes[i]));
+			BigInteger[] factors = f.factorPollard(number);
+			assertNotNull("could't factor: "+number, factors);
+			assertEquals("Wrong number of factors, it should hav been: 1 but was: "+ factors.length, 
+					1, factors.length);
+			assertTrue("The factor was wrong, it should have been:\n"+number+"\nbut was:\n"+Arrays.toString(factors), 
+					number.equals(factors[0]));
+		}
 	}
 	
 	@Test
-	public void smallNumberTest(){
-		// testing 6
-		factors = f.factor("6");
-		assertEquals(2,factors.size());
-		int index = factors.indexOf(new BigInteger("2"));
-		assertTrue(index!=-1);
-		factors.remove(index);
-		index = factors.indexOf(new BigInteger("3"));
-		assertTrue(index!=-1);
-		factors.remove(index);
+	public void twoFactorsTest(){
+		BigInteger[] expected = new BigInteger[2];
+		for(int j = 0;j<(smallPrimes.length/2);j++){
+			for(int i = 0;i<smallPrimes.length;i++){
+				expected[0] = new BigInteger(Integer.toString(smallPrimes[j]));
+				expected[1] = new BigInteger(Integer.toString(smallPrimes[i]));
+				BigInteger number = expected[0].multiply(expected[1]);
+				BigInteger[] factors = f.factorPollard(number);
+				assertNotNull("could't factor: "+number, factors);
+				assertEquals("Wrong number of factors, it should hav been: "+ expected.length + " but was: "+ factors.length, 
+						expected.length, factors.length);
+				Arrays.sort(expected);
+				Arrays.sort(factors);
+				assertTrue("Some factors was wrong, they should have been:\n"+Arrays.toString(expected)+"\nbut was:\n"+Arrays.toString(factors), 
+						Arrays.equals(expected,factors));
+			}
+		}
 	}
 	
 	@Test
-	public void squareTest(){
-		// testing 9
-		factors = f.factor("9");
-		assertEquals(2,factors.size());
-		int index = factors.indexOf(new BigInteger("3"));
-		assertTrue(index!=-1);
-		factors.remove(index);
-		index = factors.indexOf(new BigInteger("3"));
-		assertTrue(index!=-1);
-		factors.remove(index);
+	public void perfectPowerTest(){
+		//TODO
 		
-		// testing 4
-		factors = f.factor("4");
-		assertEquals(2,factors.size());
-		index = factors.indexOf(new BigInteger("2"));
-		assertTrue(index!=-1);
-		factors.remove(index);
-		index = factors.indexOf(new BigInteger("2"));
-		assertTrue(index!=-1);
-		factors.remove(index);
 	}
 
 }
