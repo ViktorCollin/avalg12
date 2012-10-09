@@ -18,7 +18,7 @@ import java.util.Vector;
  */
 public class Factorizer {
 	private static final boolean POLLARDS = true;
-	private static final int DEBUGLEVEL = 1;
+	private static final int DEBUGLEVEL = 0;
 	private static final int CERTAINTY = 20;
 	private static long TIMEOUT = 14*1000;
 	private static final int PRECALCULATED = 0;
@@ -82,7 +82,7 @@ public class Factorizer {
 			BigInteger[] result;
 			if(POLLARDS){
 				for(int i = 0;i<NUMBERS;i++){
-					if(System.currentTimeMillis() < timeout) break;
+					if(System.currentTimeMillis() > timeout) break;
 					if(numbers[i] == null) continue;
 					result = factorPollard(numbers[i]);
 					if(result == null) continue;
@@ -110,7 +110,7 @@ public class Factorizer {
 					out.write(f+"\n");
 				}
 			}
-			out.write("/n");
+			out.write("\n");
 		}
 		out.flush();
 	}
