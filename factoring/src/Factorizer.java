@@ -1,10 +1,16 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Vector;
 
@@ -17,22 +23,22 @@ import java.util.Vector;
  *
  */
 public class Factorizer {
-	private static final int DEBUGLEVEL = 0;
+	private static final int DEBUGLEVEL = 1;
 	private static final int CERTAINTY = 20;
 	private static long TIMEOUT = 14*1000;
-	private static final int NUMBERS = 100;
+	private int NUMBERS = 100;
 	private static final boolean PRECALCULATED = true;
 	private static final boolean CALCULATESMALL = true;
-	private static final boolean EVALUATED = false;
+	private static final boolean EVALUATED = true;
 	private static final boolean POLLARDS = true;
 
 	private BufferedReader in;
 	private BufferedWriter out;
 	private static long timeout;
-	
 	private BigInteger[][] factors;
 	private int[][] preCalc;
 	private BigInteger numPreCalc;
+	private boolean runInFileMode = false;
 	
 	
 
@@ -40,11 +46,14 @@ public class Factorizer {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		timeout = System.currentTimeMillis() + TIMEOUT;
 		if(args.length > 0 && args[0].equalsIgnoreCase("interactive")) {
 			System.err.println("Running in interactive mode");
 			new Factorizer().interactive();
+		}else if(args.length == 1){
+			System.err.println("Running in readFromFile mode");
+			new Factorizer().fileMode(args[0]);
 		}else{
-			timeout = System.currentTimeMillis() + TIMEOUT;
 			new Factorizer().start();
 		}
 	}
@@ -58,7 +67,7 @@ public class Factorizer {
 		if(PRECALCULATED){
 			preCalc = Constants.getPrecalculatedFactors();
 			numPreCalc = new BigInteger(preCalc.length-1+"");
-			if(DEBUGLEVEL > 0) System.out.println("Using "+numPreCalc+" precalculated numbers");
+			if(DEBUGLEVEL > 0) System.err.println("Using "+numPreCalc+" precalculated numbers");
 		}
 		
 	}
@@ -84,6 +93,27 @@ public class Factorizer {
 			e.printStackTrace();
 		}
 	}
+	private void fileMode(String fileName) {
+		runInFileMode = true;
+		try {
+			File file = new File(fileName);
+			LineNumberReader  lnr = new LineNumberReader(new FileReader(file));
+			lnr.skip(Long.MAX_VALUE);
+			NUMBERS = lnr.getLineNumber();
+			lnr.close();
+			factors = new BigInteger[NUMBERS][];
+			System.err.println("number of numbers in "+file.getName()+" is: "+NUMBERS);
+			in = new BufferedReader(new FileReader(fileName));
+			
+		} catch (FileNotFoundException e) {
+			System.err.println("File not found; java Factorizer <filename>");
+			e.printStackTrace();
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+		start();
+	}
 
 	private void start(){
 		try {
@@ -93,12 +123,25 @@ public class Factorizer {
 				calculateSmallNumbers(numbers);
 			}
 			if(EVALUATED){
-
+				PriorityQueue<EvaluatedNumber> q = new PriorityQueue<EvaluatedNumber>();
+				for(int i = 0;i<NUMBERS;i++){
+					if(numbers[i] == null) continue;
+					q.add(new EvaluatedNumber(i,numbers[i]));
+				}
+				while(!q.isEmpty()){
+					if(System.currentTimeMillis() > timeout && !runInFileMode) break;
+					EvaluatedNumber evalNum = q.remove();
+					if(POLLARDS){
+						factors[evalNum.order] = factorPollard(evalNum.number);
+						if(factors[evalNum.order] == null) continue;
+						numbers[evalNum.order] = null;
+					}
+				}
 			}else{
-				if(POLLARDS){
-					for(int i = 0;i<NUMBERS;i++){
-						if(System.currentTimeMillis() > timeout) break;
-						if(numbers[i] == null) continue;
+				for(int i = 0;i<NUMBERS;i++){
+					if(System.currentTimeMillis() > timeout) break;
+					if(numbers[i] == null) continue;
+					if(POLLARDS){
 						factors[i] = factorPollard(numbers[i]);
 						if(factors[i] == null) continue;
 						numbers[i] = null;
@@ -124,6 +167,7 @@ public class Factorizer {
 			if(factors[i] == null){
 				out.write("fail\n");
 			}else{
+				if(runInFileMode) Arrays.sort(factors[i]);
 				for(BigInteger f : factors[i]){
 					out.write(f+"\n");
 				}
@@ -206,22 +250,35 @@ public class Factorizer {
 	private void calculateSmallNumbers(BigInteger[] numbers){
 		for(int i = 0; i<NUMBERS;i++){
 			if(numbers[i].compareTo(numPreCalc) < 1){
-				factors[i] = new BigInteger[preCalc[i].length];
-				for(int j=0;j<preCalc[i].length;j++){
-					factors[i][j] = new BigInteger(preCalc[i][j]+"");
+				int number = numbers[i].intValue();
+				factors[i] = new BigInteger[preCalc[number].length];
+				for(int j=0;j<preCalc[number].length;j++){
+					factors[i][j] = new BigInteger(preCalc[number][j]+"");
 				}
 				numbers[i] = null;
 			}
 		}
 	}
 
-	private class evaluatedNumber{
-		public int evaluation;
+	private class EvaluatedNumber implements Comparable<EvaluatedNumber>{
+		public int order;
 		public BigInteger number;
+		public int evaluation;
 		
-		public evaluatedNumber(int eval, BigInteger number){
-			this.evaluation = eval;
+		public EvaluatedNumber(int order, BigInteger number){
+			this.order = order;
 			this.number = number;
+			this.evaluation = evaluate(number);
 		}
+		
+		private int evaluate(BigInteger number){
+			return number.bitLength();
+		}
+
+		@Override
+		public int compareTo(EvaluatedNumber o) {
+			return evaluation - o.evaluation;
+		}
+		
 	}
 }
