@@ -1,6 +1,7 @@
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 
 import java.math.BigInteger;
@@ -61,6 +62,7 @@ public class factoringTests {
 	@Test
 	public void perfectPowerTest(){
 		//TODO
+		fail("Not yet implemented");
 		
 	}
 
