@@ -1,8 +1,6 @@
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -11,10 +9,8 @@ import java.util.Vector;
 
 public class PreCalculator {
 	private Vector<Vector<Integer>> factorizedNumbers;
-	private BufferedReader intIn;
 	private PrintWriter intOut;
 	private PrintWriter bigIntOut;
-	private BufferedReader primesIn;
 	private PrintWriter primesOut;
 	private Vector<Integer> primes;
 	private static int max;

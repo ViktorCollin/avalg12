@@ -62,10 +62,11 @@ public class GenerateTestFiles {
 		File testFile = new File("../helpfiles/testFile");
 		File answerFile = new File("../helpfiles/answer");
 		rnd = new Random();
+		int numberOfOwerflows = 0;
 		try {
 			testOut = new PrintWriter(new BufferedWriter(new FileWriter(testFile)));
 			answerOut = new PrintWriter(new BufferedWriter(new FileWriter(answerFile)));
-			for(int i =0;i<numberOfTestCases;i++){
+			for(int i=1; i<=numberOfTestCases; i++){
 				int numFactors = rnd.nextInt(maxNumFactors)+1;
 				BigInteger composite = BigInteger.ONE;
 				BigInteger[] factors = new BigInteger[numFactors];
@@ -75,7 +76,14 @@ public class GenerateTestFiles {
 					composite = composite.multiply(factor);
 					factors[j] = factor;
 				}
+				if(composite.bitLength() > 100){
+					numberOfOwerflows++;
+					System.err.println("generated a to big composite, retrys");
+					i--;
+					continue;
+				}
 				Arrays.sort(factors);
+				answerOut.println("number "+i);
 				for(int j = 0; j<numFactors;j++){
 					answerOut.println(factors[j]);
 				}
@@ -83,7 +91,9 @@ public class GenerateTestFiles {
 				answerOut.flush();
 				testOut.println(composite);
 				testOut.flush();
+				
 			}
+			System.err.println(numberOfOwerflows + " overflows was done");
 			
 		} catch (IOException e) {
 			

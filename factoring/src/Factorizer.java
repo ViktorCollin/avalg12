@@ -23,7 +23,7 @@ import java.util.Vector;
  *
  */
 public class Factorizer {
-	private static final int DEBUGLEVEL = 1;
+	private static final int DEBUGLEVEL = 3;
 	private static final int CERTAINTY = 20;
 	private static long TIMEOUT = 14*1000;
 	private int NUMBERS = 100;
@@ -38,7 +38,7 @@ public class Factorizer {
 	private BigInteger[][] factors;
 	private int[][] preCalc;
 	private BigInteger numPreCalc;
-	private boolean runInFileMode = false;
+	private boolean RUNINFILEMODE = false;
 	
 	
 
@@ -48,10 +48,8 @@ public class Factorizer {
 	public static void main(String[] args) {
 		timeout = System.currentTimeMillis() + TIMEOUT;
 		if(args.length > 0 && args[0].equalsIgnoreCase("interactive")) {
-			System.err.println("Running in interactive mode");
 			new Factorizer().interactive();
 		}else if(args.length == 1){
-			System.err.println("Running in readFromFile mode");
 			new Factorizer().fileMode(args[0]);
 		}else{
 			new Factorizer().start();
@@ -73,6 +71,7 @@ public class Factorizer {
 	}
 	
 	private void interactive(){
+		System.err.println("Running in interactive mode");
 		try {
 			while(true){
 				BigInteger[] result;
@@ -94,7 +93,8 @@ public class Factorizer {
 		}
 	}
 	private void fileMode(String fileName) {
-		runInFileMode = true;
+		System.err.println("Running in readFromFile mode");
+		RUNINFILEMODE = true;
 		try {
 			File file = new File(fileName);
 			LineNumberReader  lnr = new LineNumberReader(new FileReader(file));
@@ -123,14 +123,33 @@ public class Factorizer {
 				calculateSmallNumbers(numbers);
 			}
 			if(EVALUATED){
+				if(DEBUGLEVEL > 2){
+					System.err.println("###########################################################");
+					System.err.println("###########################################################");
+					System.err.println(" Start evaluate numbers");
+					System.err.println("###########################################################");
+					System.err.println("###########################################################\n");
+				}
 				PriorityQueue<EvaluatedNumber> q = new PriorityQueue<EvaluatedNumber>();
 				for(int i = 0;i<NUMBERS;i++){
 					if(numbers[i] == null) continue;
 					q.add(new EvaluatedNumber(i,numbers[i]));
 				}
+				if(DEBUGLEVEL > 2){
+					System.err.println("###########################################################");
+					System.err.println("###########################################################");
+					System.err.println(" Start factoring evaluated numbers");
+					System.err.println("###########################################################");
+					System.err.println("###########################################################\n");
+				}
 				while(!q.isEmpty()){
-					if(System.currentTimeMillis() > timeout && !runInFileMode) break;
+					if(System.currentTimeMillis() > timeout && !RUNINFILEMODE) break;
 					EvaluatedNumber evalNum = q.remove();
+					if(DEBUGLEVEL > 1){
+						System.err.println("###########################################################");
+						System.err.println(" factoring the "+evalNum.order+":th number: "+evalNum.number+" ("+evalNum.evaluation+"bits)");
+						System.err.println("###########################################################\n");
+					}
 					if(POLLARDS){
 						factors[evalNum.order] = factorPollard(evalNum.number);
 						if(factors[evalNum.order] == null) continue;
@@ -138,6 +157,13 @@ public class Factorizer {
 					}
 				}
 			}else{
+				if(DEBUGLEVEL > 2){
+					System.err.println("###########################################################");
+					System.err.println("###########################################################");
+					System.err.println(" Start factoring numbers not evaluated");
+					System.err.println("###########################################################");
+					System.err.println("###########################################################\n");
+				}
 				for(int i = 0;i<NUMBERS;i++){
 					if(System.currentTimeMillis() > timeout) break;
 					if(numbers[i] == null) continue;
@@ -155,6 +181,13 @@ public class Factorizer {
 	}
 	
 	private BigInteger[] readNumbers() throws IOException{
+		if(DEBUGLEVEL > 2){
+			System.err.println("###########################################################");
+			System.err.println("###########################################################");
+			System.err.println(" Start reading in numbers");
+			System.err.println("###########################################################");
+			System.err.println("###########################################################\n");
+		}
 		BigInteger[] numbers = new BigInteger[NUMBERS];
 		for(int i = 0; i<NUMBERS;i++){
 			numbers[i] = new BigInteger(in.readLine());
@@ -163,60 +196,74 @@ public class Factorizer {
 	}
 	
 	private void printFactors() throws IOException{
+		if(DEBUGLEVEL > 2){
+			System.err.println("###########################################################");
+			System.err.println("###########################################################");
+			System.err.println(" Start printing factors");
+			System.err.println("###########################################################");
+			System.err.println("###########################################################\n");
+		}
 		for(int i = 0; i<NUMBERS;i++){
+			if(RUNINFILEMODE) out.write("number "+(i+1)+"\n");
 			if(factors[i] == null){
 				out.write("fail\n");
 			}else{
-				if(runInFileMode) Arrays.sort(factors[i]);
+				if(RUNINFILEMODE) Arrays.sort(factors[i]);
 				for(BigInteger f : factors[i]){
 					out.write(f+"\n");
 				}
 			}
 			out.write("\n");
+			out.flush();
 		}
-		out.flush();
+		
 	}
 	
 	public BigInteger[] factorPollard(BigInteger number){
 		Vector<BigInteger> factors = new Vector<BigInteger>();
-		if(number.compareTo(numPreCalc) < 1){
-			for(int factor : preCalc[number.intValue()]){
-				factors.add(new BigInteger(factor+""));
-			}
-			return factors.toArray(new BigInteger[0]);
-		}
 		Queue<BigInteger> q = new LinkedList<BigInteger>();
 		q.add(number);
 		BigInteger nonTrivial;
 		boolean failed = false;
 		while(!q.isEmpty() && !failed){
 			number = q.poll();
-			nonTrivial = pollardsRoh(number);
-			if(nonTrivial != null){
-				if(!nonTrivial.equals(BigInteger.ZERO)){
-					if(DEBUGLEVEL >= 1){
+			if(number.compareTo(numPreCalc) < 1){
+				for(int factor : preCalc[number.intValue()]){
+					if(DEBUGLEVEL > 0){
 						System.err.println("###########################################################");
-						System.err.println(nonTrivial + " Was found to be a non trivial factor of " + number);
+						System.err.println(factor + " Was found to be a PRIME that factors the small number " + number);
 						System.err.println("###########################################################\n");
 					}
-					q.add(nonTrivial);
-					q.add(number.divide(nonTrivial));
-				} else {
-					if(DEBUGLEVEL >= 1){
-						System.err.println("###########################################################");
-						System.err.println(number + " Was found to be a PRIME!");
-						System.err.println("###########################################################\n");
-					}
-					factors.add(number);
+					factors.add(new BigInteger(factor+""));
 				}
 			}else{
-				if(DEBUGLEVEL >= 1){
-					System.err.println("###########################################################");
-					System.err.println("NO non-trivial factor was found of " + number);
-					System.err.println("###########################################################\n");
+				nonTrivial = pollardsRoh(number);
+				if(nonTrivial != null){
+					if(!nonTrivial.equals(BigInteger.ZERO)){
+						if(DEBUGLEVEL > 0){
+							System.err.println("###########################################################");
+							System.err.println(nonTrivial +" and "+ number.divide(nonTrivial) +" Was found to be non trivial factors of " + number);
+							System.err.println("###########################################################\n");
+						}
+						q.add(nonTrivial);
+						q.add(number.divide(nonTrivial));
+					} else {
+						if(DEBUGLEVEL > 0){
+							System.err.println("###########################################################");
+							System.err.println(number + " Was found to be a PRIME!");
+							System.err.println("###########################################################\n");
+						}
+						factors.add(number);
+					}
+				}else{
+					if(DEBUGLEVEL > 0){
+						System.err.println("###########################################################");
+						System.err.println("NO non-trivial factor was found of " + number);
+						System.err.println("###########################################################\n");
+					}
+					failed = true;
+					return null;
 				}
-				failed = true;
-				return null;
 			}
 		}
 		return factors.toArray(new BigInteger[0]);
@@ -248,12 +295,24 @@ public class Factorizer {
 	}
 	
 	private void calculateSmallNumbers(BigInteger[] numbers){
+		if(DEBUGLEVEL > 2){
+			System.err.println("###########################################################");
+			System.err.println("###########################################################");
+			System.err.println("Factored all small numbers");
+			System.err.println("###########################################################");
+			System.err.println("###########################################################\n");
+		}
 		for(int i = 0; i<NUMBERS;i++){
 			if(numbers[i].compareTo(numPreCalc) < 1){
 				int number = numbers[i].intValue();
 				factors[i] = new BigInteger[preCalc[number].length];
 				for(int j=0;j<preCalc[number].length;j++){
 					factors[i][j] = new BigInteger(preCalc[number][j]+"");
+				}
+				if(DEBUGLEVEL > 0){
+					System.err.println("###########################################################");
+					System.err.println("Factored the small number: "+ number +" and the factors was " + Arrays.toString(factors[i]));
+					System.err.println("###########################################################\n");
 				}
 				numbers[i] = null;
 			}
@@ -269,6 +328,11 @@ public class Factorizer {
 			this.order = order;
 			this.number = number;
 			this.evaluation = evaluate(number);
+			if(DEBUGLEVEL > 1){
+				System.err.println("###########################################################");
+				System.err.println("Evaluated the "+order+":th number: "+ number +" and found that it was " + evaluation+"bits");
+				System.err.println("###########################################################\n");
+			}
 		}
 		
 		private int evaluate(BigInteger number){
