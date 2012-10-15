@@ -13,6 +13,23 @@ public class Tools {
 	 * which are divisors of e need to be considered, much reducing the work
 	 * necessary. To this end divisibility by a set of small primes is checked.
 	 */
+	public static boolean isPerfectPower(BigInteger x) {
+		BigInteger p = BigInteger.valueOf(1);
+		System.out.println(x);
+		
+		while (x.compareTo(p) >= 0) {
+			p = p.nextProbablePrime();
+			System.out.println("n: " + p);
+			
+			BigInteger t = calculate_nth_root(x, p.intValue());
+			System.out.println("Nth root: " + t);
+			
+			if (t.pow(p.intValue()).equals(x))
+				return true;
+		}		
+		
+		return false;
+	}
 
 	/**
 	 * http://gmplib.org/manual/Nth-Root-Algorithm.html#Nth-Root-Algorithm
