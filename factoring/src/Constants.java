@@ -1,7 +1,8 @@
+import java.math.BigInteger;
+
 
 public class Constants {
-	public static int[][] getPrecalculatedFactors() {
-		return new int[][]{
+	public static final int[][] PrecalculatedFactors  = {
 				{-1},
 				//Paste generated precalc here
 				//max 2980
@@ -2982,10 +2983,9 @@ public class Constants {
 				{5,5,7,17},
 				{2,2,2,2,2,3,31},
 				{13,229},
-				{2,1489},
-				{3,3,331},
-				{2,2,5,149}
+				{2,1489}
+
 				// remove the last , 
 				};
-	}
+	public static final BigInteger PrecalculatedSize = new BigInteger(PrecalculatedFactors.length+"").subtract(BigInteger.ONE);
 }
