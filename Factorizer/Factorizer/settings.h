@@ -8,8 +8,9 @@
 
 #ifndef Factorizer_setting_h
 #define Factorizer_setting_h
-int NUMBERS = 100;
-int MAXNUMBEROFDIGITS = 40;
+
+#define NUMBERS 100
+#define MAXNUMBEROFDIGITS 40
 
 #ifdef DEBUG
 #define TRACE(str) printf("%s\n", str)

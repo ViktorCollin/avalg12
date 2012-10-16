@@ -9,21 +9,20 @@
 #ifndef Factorizer_list_h
 #define Factorizer_list_h
 
-#include "/usr/local/include/gmp.h"
-
-typedef struct node{
-	MP_INT factor;
+typedef struct node {
+	mpz_t * factor;
 	struct node * next;
-}node;
+} node;
 
-typedef struct list{
+typedef struct list {
 	node * first;
 	node * last;
 	int size;
-}list;
+} list;
 
-list* createList(void);
-void appendToList(MP_INT factor, list * list);
+
+list * createList(void);
+void appendToList(mpz_t * factor, list * list);
 void appendListToList(list * smallList, list * resultList);
 
 #endif

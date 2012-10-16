@@ -8,7 +8,6 @@
 
 #ifndef Factorizer_main_h
 #define Factorizer_main_h
-#include "list.h"
 
 
 int main(int argc, const char * argv[]);

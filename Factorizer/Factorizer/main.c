@@ -10,28 +10,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include "/usr/local/include/gmp.h"
+#include "list.h"
+#include "factorizer.h"
 #include "settings.h"
 #include "main.h"
-#include "list.h"
-
-
-
-
-list* factorize(MP_INT number){
-	list * factors = createList();
-	appendToList(number, factors);
-	return factors;
-	
-}
 
 void printFactors(list * factors){
 	if(factors->first == NULL){
 		printf("fail\n");
 	}else{
 		node * currElem = factors->first;
+		
 		while(currElem != NULL){
-			mpz_out_str(stdout,10,&(currElem->factor));
-			printf("\n");
+			gmp_printf("%Zd\n", currElem->factor);
 			currElem = currElem->next;
 		}
 	}
@@ -40,41 +31,43 @@ void printFactors(list * factors){
 	
 }
 
-
 int main(int argc, const char * argv[]){
     if(argc == 1){
 		// standard mode
-		MP_INT numbers[NUMBERS];
-		list* calculatedFactors[NUMBERS];
+		mpz_t numbers[NUMBERS];
+		list * calculatedFactors[NUMBERS];
 		int i;
-		for(i=0;i<NUMBERS;i++){
-			mpz_inp_str(&numbers[i],stdin,10);
+
+		for (i = 0; i < NUMBERS; i++){
+			mpz_inp_str(numbers[i], stdin, 10);
 		}
-		for(i=0;i<NUMBERS;i++){
-			calculatedFactors[i] = factorize(numbers[i]);
+
+		for (i = 0; i < NUMBERS; i++) {
+			//calculatedFactors[i] = factorize(numbers[i]);
 		}
 		
-		for(i=0;i<NUMBERS;i++){
+		for (i = 0; i < NUMBERS; i++){
 			printFactors(calculatedFactors[i]);
 		}
 		
 		return 0;
 		
-		
 	} else if(strcmp(argv[1], "interactive") == 0){
 		// interactive mode
 		fprintf(stderr, "Interactive mode!\n");
-		MP_INT number;
-		mpz_inits(&number);
-		list* factors;
-		while(1){
-			mpz_inp_str(&number,stdin,10);
-			factors = factorize(number);
-			printFactors(factors);
-			
-			
-			
+		
+		mpz_t number;
+		mpz_inits(number);
+		list * factors = NULL;
+
+		while (1) {
+			mpz_inp_str(number, stdin, 10);
+			factors = createList();
+			factorize(factors, number, 1);
+			//factors = factorize(number);
+			//printFactors(factors);
 		}
+
 		return 0;
 		
 	}
