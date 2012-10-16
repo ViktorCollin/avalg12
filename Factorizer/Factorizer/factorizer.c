@@ -2,12 +2,6 @@
 #include <gmp.h>
 #include "factorizer.h"
 
-#ifdef DEBUG
-#define TRACE(str) printf("%s\n", str)
-#else
-#define TRACE(str)
-#endif
-
 void f(mpz_t x, mpz_t number) {
 	mpz_pow_ui(x, x, 2);
 	mpz_add_ui(x, x, 1);
@@ -29,9 +23,7 @@ void find_perfect_power(mpz_t base, unsigned long * exp, mpz_t number) {
 
 
 // TODO: Flytta ut perfect power och prime koll till tidigare!
-void pollardsRoh(mpz_t number, mpz_t d) {
-	mpz_init(d);
-
+void pollardsRoh(mpz_t d, mpz_t number) {
 	if (mpz_even_p(number)) {
 		TRACE("Even number");
 		mpz_set_ui(d, 2);
