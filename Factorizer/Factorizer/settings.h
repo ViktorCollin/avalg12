@@ -9,6 +9,7 @@
 #ifndef Factorizer_setting_h
 #define Factorizer_setting_h
 int NUMBERS = 100;
-
+int MAXNUMBEROFDIGITS = 40;
+int DEBUGLEVEL = 5;
 
 #endif
