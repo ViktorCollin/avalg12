@@ -1,4 +1,4 @@
 CC = clang -Wall -lgmp
 
 all:
-	$(CC) main.c -o main
+	$(CC) main.c factorizer.c -o main
