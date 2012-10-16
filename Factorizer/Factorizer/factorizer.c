@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <gmp.h>
+#include "factorizer.h"
 
 #ifdef DEBUG
 #define TRACE(str) printf("%s\n", str)
