@@ -10,6 +10,15 @@
 #define Factorizer_setting_h
 int NUMBERS = 100;
 int MAXNUMBEROFDIGITS = 40;
-int DEBUGLEVEL = 5;
+
+#ifdef DEBUG
+#define TRACE(str) printf("%s\n", str)
+#define TRACE_Z(z) gmp_printf ("%Zd\n", z)
+#define TRACE_sZ(s,z) gmp_printf ("%s: %Zd\n", s, z)
+#else
+#define TRACE(str)
+#define TRACE_Z(z)
+#define TRACE_sZ(s,z)
+#endif
 
 #endif

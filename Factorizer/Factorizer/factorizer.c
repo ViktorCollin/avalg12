@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <gmp.h>
+#include "/usr/local/include/gmp.h"
 #include "factorizer.h"
 
 void f(mpz_t x, mpz_t number) {

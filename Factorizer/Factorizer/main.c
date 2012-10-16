@@ -11,74 +11,15 @@
 #include <string.h>
 #include "/usr/local/include/gmp.h"
 #include "settings.h"
+#include "main.h"
+#include "list.h"
 
 
 
-typedef struct node{
-	MP_INT factor;
-	struct node * next;
-}node;
-
-typedef struct list{
-	node * first;
-	node * last;
-	int size;
-}list;
-
-int main(int argc, const char * argv[]);
-void printFactors(list * factors);
-void appendToList(MP_INT factor, list * list);
-void appendListToList(list * smallList, list * resultList);
-list* factorize(MP_INT);
-
-list* createList(void){
-	list * newList = (list *)(malloc(sizeof(list)));
-	newList->first = NULL;
-	newList->last = NULL;
-	newList->size = 0;
-	if(DEBUGLEVEL > 1){
-		fprintf(stderr, "created list\n");
-	}
-	return newList;
-}
-
-void appendToList(MP_INT factor,  list * list){
-	node * element = (node*) malloc(sizeof(node));
-	element->factor = factor;
-	element->next = NULL;
-	if(list->first == NULL){
-		list->first = element;
-	}else{
-		list->last->next = element;
-	}
-	list->last = element;
-	list->size++;
-	if(DEBUGLEVEL > 1){
-		char str[MAXNUMBEROFDIGITS];
-		mpz_get_str(str,10,&factor);
-		fprintf(stderr, "Added %s to list\n",str);
-	}
-	
-}
-void appendListToList(list * smallList, list * resultList){
-	if(resultList->first == NULL){
-		resultList = smallList;
-	}else{
-		resultList->last->next = smallList->first;
-		resultList->size += smallList->size;
-		resultList->last = smallList->last;
-	}
-	
-}
 
 list* factorize(MP_INT number){
 	list * factors = createList();
 	appendToList(number, factors);
-	if(DEBUGLEVEL > 1){
-		char str[MAXNUMBEROFDIGITS];
-		mpz_get_str(str,10,&number);
-		fprintf(stderr, "Factorized %s\n",str);
-	}
 	return factors;
 	
 }
