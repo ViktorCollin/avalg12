@@ -22,7 +22,9 @@ typedef struct list {
 
 
 list * createList(void);
-void appendToList(mpz_t * factor, list * list);
-void appendListToList(list * smallList, list * resultList);
+int appendToList(mpz_t * factor, list * list);
+int appendListToList(list * smallList, list * resultList);
+int clearList(list * listContainingElement);
+int removeElementFromList(list* list, int index);
 
 #endif

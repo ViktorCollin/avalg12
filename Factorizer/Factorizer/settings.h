@@ -11,6 +11,7 @@
 
 #define NUMBERS 100
 #define MAXNUMBEROFDIGITS 40
+#define DEBUG 1
 
 #ifdef DEBUG
 #define TRACE(str) printf("%s\n", str)

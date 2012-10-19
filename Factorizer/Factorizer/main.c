@@ -35,15 +35,18 @@ int main(int argc, const char * argv[]){
     if(argc == 1){
 		// standard mode
 		mpz_t numbers[NUMBERS];
-		list * calculatedFactors[NUMBERS];
+		list* calculatedFactors[NUMBERS];
 		int i;
 
 		for (i = 0; i < NUMBERS; i++){
+			mpz_init(numbers[i]);
 			mpz_inp_str(numbers[i], stdin, 10);
 		}
 
 		for (i = 0; i < NUMBERS; i++) {
-			//calculatedFactors[i] = factorize(numbers[i]);
+			list* factors = createList();
+			factorize(factors, numbers[i],1);
+			calculatedFactors[i] = factors;
 		}
 		
 		for (i = 0; i < NUMBERS; i++){
@@ -57,15 +60,14 @@ int main(int argc, const char * argv[]){
 		fprintf(stderr, "Interactive mode!\n");
 		
 		mpz_t number;
-		mpz_inits(number);
+		mpz_init(number);
 		list * factors = NULL;
 
 		while (1) {
 			mpz_inp_str(number, stdin, 10);
 			factors = createList();
 			factorize(factors, number, 1);
-			//factors = factorize(number);
-			//printFactors(factors);
+			printFactors(factors);
 		}
 
 		return 0;
