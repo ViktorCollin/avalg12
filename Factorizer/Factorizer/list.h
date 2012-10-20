@@ -10,7 +10,7 @@
 #define Factorizer_list_h
 
 typedef struct node {
-	mpz_t * factor;
+	mpz_t factor;
 	struct node * next;
 } node;
 
@@ -22,7 +22,7 @@ typedef struct list {
 
 
 list * createList(void);
-int appendToList(mpz_t * factor, list * list);
+int appendToList(mpz_t factor, list * list);
 int appendListToList(list * smallList, list * resultList);
 int clearList(list * listContainingElement);
 int removeElementFromList(list* list, int index);

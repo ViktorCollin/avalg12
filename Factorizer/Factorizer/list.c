@@ -13,7 +13,7 @@
 #include "settings.h"
 
 list * createList(void){
-	list * newList = (list *)(malloc(sizeof(list)));
+	list * newList = (list *) malloc(sizeof(list));
 	newList->first = NULL;
 	newList->last = NULL;
 	newList->size = 0;
@@ -21,22 +21,22 @@ list * createList(void){
 	return newList;
 }
 
-int appendToList(mpz_t * factor, list * list){
-    int prevSize = list->size;
+int appendToList(mpz_t factor, list * list){
 	node * element = (node*) malloc(sizeof(node));
-	element->factor = factor;
+	mpz_init_set(element->factor, factor);
 	element->next = NULL;
 
 	if (list->first == NULL) {
 		list->first = element;
+		list->last  = element;
 	} else {
 		list->last->next = element;
+		list->last = element;
 	}
 
-	list->last = element;
 	list->size++;
     
-    return (list->size - prevSize);
+    return 1;
 }
 
 int appendListToList(list * smallList, list * resultList){

@@ -28,7 +28,6 @@ void printFactors(list * factors){
 	}
 	printf("\n");
 	fflush(stdout);
-	
 }
 
 int main(int argc, const char * argv[]){
@@ -61,12 +60,16 @@ int main(int argc, const char * argv[]){
 		
 		mpz_t number;
 		mpz_init(number);
-		list * factors = NULL;
+		list * factors = createList();
+
+
 
 		while (1) {
 			mpz_inp_str(number, stdin, 10);
 			factors = createList();
 			factorize(factors, number, 1);
+
+			TRACE("PRINTING FACTORS:");
 			printFactors(factors);
 		}
 
