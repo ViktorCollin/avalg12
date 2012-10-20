@@ -8,7 +8,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "/usr/local/include/gmp.h"
+#include <gmp.h>
 #include "list.h"
 #include "settings.h"
 

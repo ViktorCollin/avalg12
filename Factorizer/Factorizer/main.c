@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "/usr/local/include/gmp.h"
+#include <gmp.h>
 #include "list.h"
 #include "factorizer.h"
 #include "settings.h"
@@ -34,7 +34,7 @@ int main(int argc, const char * argv[]){
     if(argc == 1){
 		// standard mode
 		mpz_t numbers[NUMBERS];
-		list* calculatedFactors[NUMBERS];
+		list * calculatedFactors[NUMBERS];
 		int i;
 
 		for (i = 0; i < NUMBERS; i++){
@@ -62,8 +62,6 @@ int main(int argc, const char * argv[]){
 		mpz_init(number);
 		list * factors = createList();
 
-
-
 		while (1) {
 			mpz_inp_str(number, stdin, 10);
 			factors = createList();
@@ -74,7 +72,6 @@ int main(int argc, const char * argv[]){
 		}
 
 		return 0;
-		
 	}
     
     return 1;
