@@ -17,7 +17,7 @@ list * createList(void){
 	newList->first = NULL;
 	newList->last = NULL;
 	newList->size = 0;
-	TRACE("created list");
+	newList->failed = 0;
 	return newList;
 }
 

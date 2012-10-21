@@ -18,6 +18,7 @@ typedef struct list {
 	node * first;
 	node * last;
 	int size;
+	int failed;
 } list;
 
 

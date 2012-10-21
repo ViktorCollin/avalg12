@@ -16,7 +16,7 @@
 #include "main.h"
 
 void printFactors(list * factors){
-	if(factors->first == NULL){
+	if(factors->failed){
 		printf("fail\n");
 	}else{
 		node * currElem = factors->first;
@@ -43,15 +43,27 @@ int main(int argc, const char * argv[]){
 		}
 
 		for (i = 0; i < NUMBERS; i++) {
+	
+			/*
+			if (i > 60) {
+				printf("fail\n\n");
+				continue;
+			}
+			*/
+	
+			reset_timer();
 			list* factors = createList();
 			factorize(factors, numbers[i],1);
+			
 			calculatedFactors[i] = factors;
+			printFactors(calculatedFactors[i]);
 		}
-		
+	/*	
 		for (i = 0; i < NUMBERS; i++){
 			printFactors(calculatedFactors[i]);
 		}
 		
+		*/
 		return 0;
 		
 	} else if(strcmp(argv[1], "interactive") == 0){
@@ -60,10 +72,11 @@ int main(int argc, const char * argv[]){
 		
 		mpz_t number;
 		mpz_init(number);
-		list * factors = createList();
+		list * factors = NULL;
 
 		while (1) {
 			mpz_inp_str(number, stdin, 10);
+			reset_timer();
 			factors = createList();
 			factorize(factors, number, 1);
 
@@ -76,4 +89,3 @@ int main(int argc, const char * argv[]){
     
     return 1;
 }
-
