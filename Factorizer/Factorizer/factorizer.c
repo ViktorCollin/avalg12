@@ -125,7 +125,7 @@ void factorize(list * factors, mpz_t number, int count) {
 }
 
 int pollardsRoh(mpz_t d, mpz_t number, unsigned long a) {
-	gmp_fprintf(stderr,"Pollards roh: %Zd\n", number);
+	gmp_fprintf(stderr,"Pollards roh: %Zd, a:%lu\n", number, a);
 	if (mpz_even_p(number)) {
 		mpz_set_ui(d, 2);
 		return 1;
@@ -135,21 +135,31 @@ int pollardsRoh(mpz_t d, mpz_t number, unsigned long a) {
 		mpz_init_set_ui(y, 1);
 		mpz_set_ui(d, 1);
 
-		while (!mpz_cmp_ui(d, 1)) {
-			f(x, number, a);
-			f(y, number, a);
-			f(y, number, a);
+		mpz_t z;
+		mpz_init_set_ui(z, 1);
 
-			mpz_sub(d, x, y);
-			mpz_abs(d, d);
-			mpz_gcd(d, d, number);
-	
+		while (!mpz_cmp_ui(d, 1)) {
+			for (int i = 0; i < 100; i++) {
 			if (--TIMER < 0)
 				return 0;
+				f(x, number, a);
+				f(y, number, a);
+				f(y, number, a);
+
+				mpz_sub(d, x, y);
+				mpz_mul(z, z, d);
+				mpz_mod(z, z, number);
+			}
+
+			mpz_abs(z, z);
+			mpz_gcd(d, z, number);
+	
 		}
 		
 		mpz_clear(x);
 		mpz_clear(y);
+
+		mpz_clear(z);
 
 		if (mpz_cmp(d, number) == 0) {
 			return pollardsRoh(d, number, a + 1);
@@ -158,3 +168,4 @@ int pollardsRoh(mpz_t d, mpz_t number, unsigned long a) {
 		return 1;
 	}
 }
+

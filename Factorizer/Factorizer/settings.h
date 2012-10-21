@@ -11,7 +11,7 @@
 
 #define NUMBERS 100
 #define MAXNUMBEROFDIGITS 40
-#define TIMER_MAX 210000
+#define TIMER_MAX 360000
 
 #ifdef DEBUG
 #define TRACE(str) fprintf(stderr,"%s\n", str)
