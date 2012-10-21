@@ -123,10 +123,6 @@ void factorize(list * factors, mpz_t number, int count) {
 }
 
 int pollardsRoh(mpz_t d, mpz_t number, unsigned long a) {
-	if (a > 3)
-		return 0;
-
-
 	gmp_fprintf(stderr,"Pollards roh: %Zd\n", number);
 	if (mpz_even_p(number)) {
 		mpz_set_ui(d, 2);
