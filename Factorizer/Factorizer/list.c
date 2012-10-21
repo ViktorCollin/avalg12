@@ -8,7 +8,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifdef DEBUG
+#include "/usr/local/include/gmp.h"
+#else
 #include <gmp.h>
+#endif
 #include "list.h"
 #include "settings.h"
 
@@ -21,9 +25,10 @@ list * createList(void){
 	return newList;
 }
 
-int appendToList(mpz_t factor, list * list){
+int appendToList(mpz_t factor, int count, list * list){
 	node * element = (node*) malloc(sizeof(node));
 	mpz_init_set(element->factor, factor);
+	element->count = count;
 	element->next = NULL;
 
 	if (list->first == NULL) {

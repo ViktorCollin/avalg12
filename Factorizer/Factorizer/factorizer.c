@@ -1,5 +1,9 @@
 #include <stdio.h>
+#ifdef DEBUG
+#include "/usr/local/include/gmp.h"
+#else
 #include <gmp.h>
+#endif
 #include "list.h"
 #include "factorizer.h"
 #include "settings.h"
@@ -43,26 +47,26 @@ unsigned int trail_division(list * factors, mpz_t number, int count) {
 	mpz_init(div);
 
 	unsigned int found = 0;	
-
 	int i = 0;
-	while (mpz_cmp_ui(number, 1) != 0) {
+
+	while (mpz_cmp_ui(number, 1) != 0 && i < NUMBER_OF_PRIMES) {
+		// number = q*d + r
 		mpz_tdiv_qr_ui(q, r, number, primes[i]);
 
 		if (mpz_cmp_ui(r, 0) == 0) {
+			// Vi har hittat en primtalsfaktor!
 			mpz_set(number, q);
 			found++;
 
 			mpz_set_ui(div, primes[i]);
-			for (int j = 0; j < count; j++)
-				appendToList(div, factors);
-			gmp_fprintf(stderr, "trail factor: %Zd\n", div);
-		} else if (i < 999) {
-			i++;
+			appendToList(div, count, factors);
 		} else {
-			break;
+			// Försök med nästa primtal
+			i++;
 		}
 	}
 
+	mpz_clear(div);
 	mpz_clear(q);
 	mpz_clear(r);
 
@@ -84,7 +88,7 @@ void factorize(list * factors, mpz_t number, int count) {
 
 	//gmp_fprintf(stderr,"factorize(%Zd, %d)\n", number, count);
 	if (mpz_cmp_ui(number, 1) == 0) {
-		appendToList(number, factors);
+		appendToList(number, 1, factors);
 	}
 		
 	mpz_t d;
@@ -92,10 +96,8 @@ void factorize(list * factors, mpz_t number, int count) {
 				
 	while (mpz_cmp_ui(number, 1)) {
 		if (mpz_probab_prime_p(number, 10)) {
-			for (int i = 0; i < count; i++) {
-				//gmp_fprintf(stderr,"Prime factor: %Zd\n", number);
-				appendToList(number, factors);
-			}
+			//gmp_fprintf(stderr,"Prime factor: %Zd\n", number);
+			appendToList(number, count, factors);
 
 			break;
 		} else if (mpz_perfect_power_p(number)) {

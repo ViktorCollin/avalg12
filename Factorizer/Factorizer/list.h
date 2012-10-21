@@ -11,6 +11,7 @@
 
 typedef struct node {
 	mpz_t factor;
+	int count;
 	struct node * next;
 } node;
 
@@ -23,7 +24,7 @@ typedef struct list {
 
 
 list * createList(void);
-int appendToList(mpz_t factor, list * list);
+int appendToList(mpz_t factor, int count, list * list);
 int appendListToList(list * smallList, list * resultList);
 int clearList(list * listContainingElement);
 int removeElementFromList(list* list, int index);

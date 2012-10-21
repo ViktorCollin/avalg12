@@ -9,7 +9,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef DEBUG
+#include "/usr/local/include/gmp.h"
+#else
 #include <gmp.h>
+#endif
 #include "list.h"
 #include "factorizer.h"
 #include "settings.h"
@@ -22,7 +26,8 @@ void printFactors(list * factors){
 		node * currElem = factors->first;
 		
 		while(currElem != NULL){
-			gmp_printf("%Zd\n", currElem->factor);
+			for (int i = 0; i < currElem->count; i++)
+				gmp_printf("%Zd\n", currElem->factor);
 			currElem = currElem->next;
 		}
 	}
