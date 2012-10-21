@@ -21,8 +21,11 @@ void f(mpz_t x, mpz_t number, unsigned long a) {
 	mpz_mod(x, x, number);
 }
 
+
+
 void find_perfect_power(mpz_t base, unsigned long * exp, mpz_t number) {
-	//gmp_fprintf(stderr,"find perfect power for %Zd", number);
+	TRACE("find perfect power for ");TRACE_Z(number);TRACE_N();
+    
 	// max_exp = log2(number)
 	unsigned long max_exp = mpz_sizeinbase(number, 2);
 
@@ -55,11 +58,11 @@ unsigned int trail_division(list * factors, mpz_t number, int count) {
 
 		if (mpz_cmp_ui(r, 0) == 0) {
 			// Vi har hittat en primtalsfaktor!
-			mpz_set(number, q);
-			found++;
-
+            found++;
 			mpz_set_ui(div, primes[i]);
 			appendToList(div, count, factors);
+            TRACE("The prime ");TRACE_Z(div);TRACE(" was found to divide ");TRACE_Z(number);TRACE_N();
+			mpz_set(number, q);
 		} else {
 			// Försök med nästa primtal
 			i++;
@@ -97,13 +100,16 @@ void factorize(list * factors, mpz_t number, int count) {
 	while (mpz_cmp_ui(number, 1)) {
 		if (mpz_probab_prime_p(number, 10)) {
 			//gmp_fprintf(stderr,"Prime factor: %Zd\n", number);
+            TRACE_Z(number);TRACE(" was found to be a prime!");TRACE_N();
 			appendToList(number, count, factors);
 
 			break;
 		} else if (mpz_perfect_power_p(number)) {
+            TRACE_Z(number);TRACE(" was found to be a perfect power ");
 			//gmp_fprintf(stderr,"Perfect power: %Zd\n", number);
 			unsigned long exp = 0;
 			find_perfect_power(number, &exp, number);
+            TRACE("combined of  ");TRACE_Z(number);TRACE("^");TRACE_U(exp);TRACE_N();
 			//gmp_fprintf(stderr,"%Zd exp: %lu, alltså alla faktorer ska räknas exp gånger nu!\n", number, exp);
 			count *= exp;
 
@@ -129,6 +135,7 @@ int pollardsRoh(mpz_t d, mpz_t number, unsigned long a) {
 	if (mpz_even_p(number)) {
 		mpz_set_ui(d, 2);
 		return 1;
+        
 	} else {
 		mpz_t x, y;
 		mpz_init_set_ui(x, 1);
@@ -140,8 +147,9 @@ int pollardsRoh(mpz_t d, mpz_t number, unsigned long a) {
 
 		while (!mpz_cmp_ui(d, 1)) {
 			for (int i = 0; i < 100; i++) {
-			if (--TIMER < 0)
-				return 0;
+                if (--TIMER < 0){
+                    return 0;
+                }
 				f(x, number, a);
 				f(y, number, a);
 				f(y, number, a);

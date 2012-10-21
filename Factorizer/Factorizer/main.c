@@ -85,7 +85,7 @@ int main(int argc, const char * argv[]){
 			factors = createList();
 			factorize(factors, number, 1);
 
-			TRACE("PRINTING FACTORS:");
+			TRACE("PRINTING FACTORS:\n");
 			printFactors(factors);
 		}
 
