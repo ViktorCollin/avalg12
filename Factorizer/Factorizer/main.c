@@ -37,18 +37,13 @@ void printFactors(list * factors){
 }
 
 int main(int argc, const char * argv[]){
-	time_t rawtime;
-	struct tm * timeinfo;
-
-	time ( &rawtime );
-	timeinfo = localtime ( &rawtime );
-	printf ( "Current local time and date: %s", asctime (timeinfo) );
-
     if(argc == 1){
 		// standard mode
 		mpz_t numbers[NUMBERS];
 		list * calculatedFactors[NUMBERS];
 		int i;
+		mpz_t y;
+		mpz_init_set_ui(y, 1);
 
 		for (i = 0; i < NUMBERS; i++){
 			mpz_init(numbers[i]);
@@ -56,27 +51,17 @@ int main(int argc, const char * argv[]){
 		}
 
 		for (i = 0; i < NUMBERS; i++) {
-	
-			/*
-			if (i > 60) {
-				printf("fail\n\n");
-				continue;
-			}
-			*/
-	
 			reset_timer();
 			list* factors = createList();
-			factorize(factors, numbers[i],1);
+			factorize(factors, numbers[i],1, y);
 			
 			calculatedFactors[i] = factors;
-			printFactors(calculatedFactors[i]);
 		}
-	/*	
+
 		for (i = 0; i < NUMBERS; i++){
 			printFactors(calculatedFactors[i]);
 		}
 		
-		*/
 		return 0;
 		
 	} else if(strcmp(argv[1], "interactive") == 0){
@@ -86,12 +71,14 @@ int main(int argc, const char * argv[]){
 		mpz_t number;
 		mpz_init(number);
 		list * factors = NULL;
+		mpz_t y;
+		mpz_init_set_ui(y, 1);
 
 		while (1) {
 			mpz_inp_str(number, stdin, 10);
 			reset_timer();
 			factors = createList();
-			factorize(factors, number, 1);
+			factorize(factors, number, 1, y);
 
 			TRACE("PRINTING FACTORS:\n");
 			printFactors(factors);

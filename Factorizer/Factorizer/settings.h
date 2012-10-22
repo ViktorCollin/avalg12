@@ -11,8 +11,16 @@
 
 #define NUMBERS 100
 #define MAXNUMBEROFDIGITS 40
-#define TIMER_MAX 30
-#define BRENTS 1
+
+#define BRENTS 0
+#define POLLARDS 0
+#define FERMAT 1
+
+#if BRENTS
+#define TIMER_MAX 5240
+#elif FERMAT
+#define TIMER_MAX 130000
+#endif
 
 #define MIN(a,b) (a>b?b:a)
 #define ABS(a) (a<0?-a:a)

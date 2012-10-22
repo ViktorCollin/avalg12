@@ -9,7 +9,7 @@
 #include "settings.h"
 #include "primes.h"
 
-long TIMER;
+int TIMER;
 
 void reset_timer() {
 	TIMER = TIMER_MAX;
@@ -20,8 +20,6 @@ void f(mpz_t x, mpz_t number, unsigned long a) {
 	mpz_add_ui(x, x, a);
 	mpz_mod(x, x, number);
 }
-
-
 
 void find_perfect_power(mpz_t base, unsigned long * exp, mpz_t number) {
 	TRACE("find perfect power for ");TRACE_Z(number);TRACE_N();
@@ -76,7 +74,7 @@ unsigned int trail_division(list * factors, mpz_t number, int count) {
 	return found;
 }
 
-void factorize(list * factors, mpz_t number, int count) {
+void factorize(list * factors, mpz_t number, int count, mpz_t y) {
 	if (--TIMER < 0) {
 		factors->failed = 1;
 		return;
@@ -96,7 +94,7 @@ void factorize(list * factors, mpz_t number, int count) {
 		
 	mpz_t d;
 	mpz_init(d);
-				
+
 	while (mpz_cmp_ui(number, 1)) {
 		if (mpz_probab_prime_p(number, 10)) {
 			//gmp_fprintf(stderr,"Prime factor: %Zd\n", number);
@@ -115,14 +113,18 @@ void factorize(list * factors, mpz_t number, int count) {
 
 		} else if (trail_division(factors, number, count)) {
 			continue;
-        } else if (BRENTS && brents(d, number, 1)){
+        } else if (BRENTS && brents(d, number, 1, y)){
             gmp_fprintf(stderr, " -> %Zd\n", d);
 			mpz_div(number, number, d);
-			factorize(factors, d, count);
-		} else if (!BRENTS && pollardsRoh(d, number, 1)) {
+			factorize(factors, d, count, y);
+		} else if (POLLARDS && pollardsRoh(d, number, 1)) {
 			gmp_fprintf(stderr, " -> %Zd\n", d);
 			mpz_div(number, number, d);
-			factorize(factors, d, count);
+			factorize(factors, d, count, y);
+		} else if (FERMAT && fermat(d, number)) {
+			gmp_fprintf(stderr, " -> %Zd\n", d);
+			mpz_div(number, number, d);
+			factorize(factors, d, count, y);
 		} else {
 			// Funkar detta? :-) Kanske!
 			gmp_fprintf(stderr, "Fakoriseringen misslyckades med %Zd\n", number);
@@ -181,26 +183,56 @@ int pollardsRoh(mpz_t d, mpz_t number, unsigned long a) {
 	}
 }
 
-int brents(mpz_t d, mpz_t number, unsigned long a){
+int fermat(mpz_t d, mpz_t n) {
+    gmp_fprintf(stderr,"Fermat: %Zd\n", n);
+	mpz_t a, b, t;
+	mpz_init(a);
+	mpz_init(b);
+	mpz_init(t);
+
+	mpz_sqrtrem(a, t, n);
+	
+	if (mpz_cmp_ui(t, 0) != 0) {
+		mpz_add_ui(a, a, 1);
+	}
+
+	mpz_mul(b, a, a);
+	mpz_sub(b, b, n);
+
+	while (!mpz_root(d, b, 2)) {
+		if (--TIMER < 0){
+			return 0;
+		}
+
+		mpz_add_ui(a, a, 1);
+
+		mpz_mul(b, a, a);
+		mpz_sub(b, b, n);
+	}
+
+	mpz_neg(d, d);
+	mpz_add(d, d, a);
+
+	return 1;
+}
+
+int brents(mpz_t d, mpz_t number, unsigned long a, mpz_t y){
     // translation table
     // d = g
     // a = c kan vara random mellan 1 och number-3
     // m kan lekas med ju större desto snabbare
     // 
     gmp_fprintf(stderr,"Brents : %Zd, a:%lu\n", number, a);
-    mpz_t q, x, y, ys,tmp;
+    mpz_t q, x, ys,tmp;
     int r = 1, m = 100, k;
     mpz_init(x);
     mpz_init(ys);
     mpz_init(tmp);
     mpz_init_set_ui(q,1);
-    mpz_init_set_ui(y,1);
     mpz_set_ui(d,1);
    
 
 	while(mpz_cmp_ui(d, 1) == 0){
-		//if (--TIMER > 0)
-		//	goto CLEARZ;
         int i;
         mpz_set(x,y);
         
@@ -210,15 +242,19 @@ int brents(mpz_t d, mpz_t number, unsigned long a){
 
         k = 0;
         while (k<r && mpz_cmp_ui(d, 1)==0){
+			if (--TIMER < 0) {
+				fprintf(stderr, "Nu timar jag out!\n");
+				goto FAILURE;
+			}
 
             mpz_set(ys,y);
             for(i=0;i<MIN(m,r-k);i++){
                 f(y,number,a);
                 mpz_sub(tmp,x,y);
-                mpz_abs(tmp,tmp);
                 mpz_mul(q,q,tmp);
                 mpz_mod(q,q,number);
             }
+
             mpz_gcd(d,q,number);
             k += m;
         }
@@ -229,30 +265,23 @@ int brents(mpz_t d, mpz_t number, unsigned long a){
         while(--TIMER > 0){
             f(ys,number,a);
             mpz_sub(tmp,x,ys);
-            mpz_abs(tmp,tmp);
             mpz_gcd(d,tmp,number);
             
 			if(mpz_cmp_ui(d, 1) != 0){
-                mpz_clear(q);
-                mpz_clear(x);
-                mpz_clear(y);
-                mpz_clear(ys);
-                mpz_clear(tmp);
-                return 1;
+				goto SUCCESS;
             }
         }
 		
-CLEARZ:
+FAILURE:
         mpz_clear(q);
         mpz_clear(x);
-        mpz_clear(y);
         mpz_clear(ys);
         mpz_clear(tmp);
         return 0;
     }
+SUCCESS:
     mpz_clear(q);
     mpz_clear(x);
-    mpz_clear(y);
     mpz_clear(ys);
     mpz_clear(tmp);
     return 1;
