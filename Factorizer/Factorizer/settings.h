@@ -19,7 +19,7 @@
 #if BRENTS
 #define TIMER_MAX 5240
 #elif FERMAT
-#define TIMER_MAX 8300000
+#define TIMER_MAX 85000
 #endif
 
 #define MIN(a,b) (a>b?b:a)

@@ -186,59 +186,67 @@ int pollardsRoh(mpz_t d, mpz_t number, unsigned long a) {
 int fermat(mpz_t d, mpz_t n) {
     gmp_fprintf(stderr,"Fermat: %Zd\n", n);
 
-	mpz_t a, b;
-	mpz_init(a);
-	mpz_init(b);
+	/***
+	 * Enligt någon webpage på internet ska detta vara Dixons algoritm
+	 * Vettefan om det är sant dock :-) 22p på Kattis
+	 *
+	 * Tror vi kanske ska välja Fermat (längst ner) ändå eftersom den nog
+	 * är mer lättförklarad! Jag fattar inget av denna :-)
+	 */
 
-	mpz_t s, u, v, r;
-	mpz_init(s);
-	mpz_sqrt(s, n);
-	mpz_add_ui(s, s, 1);
+	mpz_t x, xx, y, q, rt;
 
-	mpz_init(u);
-	mpz_mul_ui(u, s, 2);
-	mpz_add_ui(u, s, 1);
+	mpz_init(rt);
+	mpz_init(x);
+	mpz_init(xx);
+	mpz_init(y);
+	mpz_init(q);
+	
+	if (mpz_root(rt, n, 2)) {
+		mpz_set(d, rt);
+		return 1;
+	}
+	
+	mpz_set(x, rt);
 
-	mpz_init_set_ui(v, 1);
-
-	mpz_init(r);
-	mpz_mul(r, s, s);
-	mpz_sub(r, r, n);
-
-	while (mpz_cmp_ui(r, 0) != 0) {
+	while (1) {
 		if (--TIMER < 0){
 			return 0;
 		}
 
-		while (mpz_cmp_ui(r, 0) > 0) {
-			if (--TIMER < 0){
-				return 0;
-			}
-			mpz_sub(r, r, v);
-			mpz_add_ui(v, v, 2);
+		mpz_add_ui(x, x, 1);
+
+		mpz_gcd(d, x, n);
+		
+		//if (1<d && d<n)
+		if (mpz_cmp_ui(d, 1) > 0 && mpz_cmp(n,d) > 0) {
+			return 1;
 		}
 
-		if (mpz_cmp_ui(r, 0) < 0) {
-			mpz_add(r, r, u);
-			mpz_add_ui(u, u, 2);
+		mpz_mul(xx, x, x);
+		mpz_mod(x, x, n);
+		
+		if (mpz_root(y, xx, 2)) {
+			mpz_sub(q, x, y);
+			mpz_mod(q, q, n);
+
+			mpz_gcd(d, q, n);
+			
+			if (mpz_cmp_ui(d, 1) > 0 && mpz_cmp(n,d) > 0) {
+				return 1;
+			}		
 		}
 	}
+	/*	At this point the loop would stop after a few times, and then
+	 *	*	we would try to construct a perfect square by expressing the
+	 *	*	previous r^2 in terms of an exponent vector with
+	 *	*	primes {2, 3, ..., k} as a basis, for some k.  Then row reduce
+	 *	*	until I find a solution in terms of each vector with only even
+	 *	*	entries.  Thus the result would also be a perfect square.
+	 *	*		I hope to impliment this later. -Paul.
+	 *	*/
+	return 0;
 
-	mpz_add(a, u, v);
-	mpz_sub_ui(a, a, 2);
-	mpz_divexact_ui(a, a, 2);
-
-	mpz_sub(b, u, v);
-	mpz_divexact_ui(b, b, 2);
-
-	mpz_set(d, a);
-
-	mpz_clear(s);
-	mpz_clear(u);
-	mpz_clear(v);
-	mpz_clear(r);
-
-	return 1;
 /*
 
 
