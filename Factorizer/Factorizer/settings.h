@@ -12,6 +12,10 @@
 #define NUMBERS 100
 #define MAXNUMBEROFDIGITS 40
 #define TIMER_MAX 360000
+#define BRENTS 1
+
+#define MIN(a,b) (a>b?b:a)
+#define ABS(a) (a<0?-a:a)
 
 #ifdef DEBUG
 #define TRACE(str) fprintf(stderr,"%s", str)
