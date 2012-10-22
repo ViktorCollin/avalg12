@@ -187,54 +187,50 @@ int brents(mpz_t d, mpz_t number, unsigned long a){
     // a = c kan vara random mellan 1 och number-3
     // m kan lekas med ju större desto snabbare
     // 
-    gmp_fprintf(stderr,"Brents : %Zd, a:%ul\n", number, a);
-	if (mpz_even_p(number)) {
-		mpz_set_ui(d, 2);
-		return 1;
+    gmp_fprintf(stderr,"Brents : %Zd, a:%lu\n", number, a);
+    mpz_t q, x, y, ys,tmp;
+    int r = 1, m = 100, k;
+    mpz_inits(x,ys,tmp,NULL);
+    mpz_init_set_ui(q,1);
+    mpz_init_set_ui(y,1);
+    mpz_set_ui(d,1);
+    while(mpz_cmp_ui(d, 1) == 0){
+        int i;
+        mpz_set(x,y);
         
-	} else {
-        
-        mpz_t q, x, y, ys,tmp;
-        int r = 1, m = 100, k;
-        mpz_inits(x,ys,tmp);
-        mpz_init_set_ui(q,1);
-        mpz_init_set_ui(y,1);
-        mpz_set_ui(d,1);
-        while(mpz_cmp_ui(d, 1) == 0){
-            int i;
-            
-            mpz_set(x,y);
-            for(i=0; i<r;i++){
-                f(y,number,a);
-            }
-            k = 0;
-            while(k<r && mpz_cmp_ui(d, 1)==0){
-                mpz_set(ys,y);
-                for(i=0;i<MIN(m,r-k);i++){
-                    f(y,number,a);
-                    mpz_sub(tmp,x,y);
-                    mpz_abs(tmp,tmp);
-                    mpz_mul(q,q,tmp);
-                    mpz_mod(q,q,number);
-                }
-                mpz_gcd(d,q,number);
-                k += m;
-            }
-            r = r << 1;
+        for(i=0; i<r;i++){
+            f(y,number,a);
         }
-        if(mpz_cmp(d,number)==0){
-            while(1){
-                f(ys,number,a);
+        k = 0;
+        while(k<r && mpz_cmp_ui(d, 1)==0){
+            mpz_set(ys,y);
+            for(i=0;i<MIN(m,r-k);i++){
+                f(y,number,a);
                 mpz_sub(tmp,x,y);
                 mpz_abs(tmp,tmp);
-                mpz_gcd(d,tmp,number);
-                if(mpz_cmp_ui(d, 1) != 0){
-                    break;
-                }
+                mpz_mul(q,q,tmp);
+                mpz_mod(q,q,number);
+            }
+            mpz_gcd(d,q,number);
+            k += m;
+        }
+        r = r << 1;
+    }
+    if(mpz_cmp(d,number)==0){
+        while(--TIMER > 0){
+            f(ys,number,a);
+            mpz_sub(tmp,x,y);
+            mpz_abs(tmp,tmp);
+            mpz_gcd(d,tmp,number);
+            if(mpz_cmp_ui(d, 1) != 0){
+                mpz_clears(q, x, y, ys,tmp,NULL);
+                return 1;
             }
         }
-        mpz_clears(q, x, ys,tmp);
-        return 1;
+        mpz_clears(q, x, y, ys,tmp,NULL);
+        return 0;
     }
+    mpz_clears(q, x, y, ys,tmp,NULL);
+    return 1;
 }
 
