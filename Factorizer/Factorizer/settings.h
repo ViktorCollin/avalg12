@@ -25,7 +25,7 @@
 #else
 #define TRACE(str)
 #define TRACE_Z(z)
-#define TRACE_L(ul)
+#define TRACE_U(ul)
 #define TRACE_N()
 
 #endif

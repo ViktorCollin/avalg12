@@ -115,7 +115,7 @@ void factorize(list * factors, mpz_t number, int count) {
 
 		} else if (trail_division(factors, number, count)) {
 			continue;
-        } else if (BRENTS && brents(d, number, 10)){
+        } else if (BRENTS && brents(d, number, 100)){
             gmp_fprintf(stderr, " -> %Zd\n", d);
 			mpz_div(number, number, d);
 			factorize(factors, d, count);
@@ -190,7 +190,9 @@ int brents(mpz_t d, mpz_t number, unsigned long a){
     gmp_fprintf(stderr,"Brents : %Zd, a:%lu\n", number, a);
     mpz_t q, x, y, ys,tmp;
     int r = 1, m = 100, k;
-    mpz_inits(x,ys,tmp,NULL);
+    mpz_init(x);
+    mpz_init(ys);
+    mpz_init(tmp);
     mpz_init_set_ui(q,1);
     mpz_init_set_ui(y,1);
     mpz_set_ui(d,1);
@@ -223,14 +225,26 @@ int brents(mpz_t d, mpz_t number, unsigned long a){
             mpz_abs(tmp,tmp);
             mpz_gcd(d,tmp,number);
             if(mpz_cmp_ui(d, 1) != 0){
-                mpz_clears(q, x, y, ys,tmp,NULL);
+                mpz_clear(q);
+                mpz_clear(x);
+                mpz_clear(y);
+                mpz_clear(ys);
+                mpz_clear(tmp);
                 return 1;
             }
         }
-        mpz_clears(q, x, y, ys,tmp,NULL);
+        mpz_clear(q);
+        mpz_clear(x);
+        mpz_clear(y);
+        mpz_clear(ys);
+        mpz_clear(tmp);
         return 0;
     }
-    mpz_clears(q, x, y, ys,tmp,NULL);
+    mpz_clear(q);
+    mpz_clear(x);
+    mpz_clear(y);
+    mpz_clear(ys);
+    mpz_clear(tmp);
     return 1;
 }
 
