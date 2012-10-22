@@ -11,7 +11,7 @@
 
 #define NUMBERS 100
 #define MAXNUMBEROFDIGITS 40
-#define TIMER_MAX 360000
+#define TIMER_MAX 30
 #define BRENTS 1
 
 #define MIN(a,b) (a>b?b:a)

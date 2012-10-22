@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #ifdef DEBUG
 #include "/usr/local/include/gmp.h"
 #else
@@ -36,6 +37,13 @@ void printFactors(list * factors){
 }
 
 int main(int argc, const char * argv[]){
+	time_t rawtime;
+	struct tm * timeinfo;
+
+	time ( &rawtime );
+	timeinfo = localtime ( &rawtime );
+	printf ( "Current local time and date: %s", asctime (timeinfo) );
+
     if(argc == 1){
 		// standard mode
 		mpz_t numbers[NUMBERS];

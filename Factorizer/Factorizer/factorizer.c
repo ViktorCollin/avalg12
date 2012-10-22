@@ -9,7 +9,7 @@
 #include "settings.h"
 #include "primes.h"
 
-int TIMER;
+long TIMER;
 
 void reset_timer() {
 	TIMER = TIMER_MAX;
@@ -115,7 +115,7 @@ void factorize(list * factors, mpz_t number, int count) {
 
 		} else if (trail_division(factors, number, count)) {
 			continue;
-        } else if (BRENTS && brents(d, number, 100)){
+        } else if (BRENTS && brents(d, number, 1)){
             gmp_fprintf(stderr, " -> %Zd\n", d);
 			mpz_div(number, number, d);
 			factorize(factors, d, count);
@@ -196,15 +196,21 @@ int brents(mpz_t d, mpz_t number, unsigned long a){
     mpz_init_set_ui(q,1);
     mpz_init_set_ui(y,1);
     mpz_set_ui(d,1);
-    while(mpz_cmp_ui(d, 1) == 0){
+   
+
+	while(mpz_cmp_ui(d, 1) == 0){
+		//if (--TIMER > 0)
+		//	goto CLEARZ;
         int i;
         mpz_set(x,y);
         
         for(i=0; i<r;i++){
             f(y,number,a);
         }
+
         k = 0;
-        while(k<r && mpz_cmp_ui(d, 1)==0){
+        while (k<r && mpz_cmp_ui(d, 1)==0){
+
             mpz_set(ys,y);
             for(i=0;i<MIN(m,r-k);i++){
                 f(y,number,a);
@@ -218,13 +224,15 @@ int brents(mpz_t d, mpz_t number, unsigned long a){
         }
         r = r << 1;
     }
+
     if(mpz_cmp(d,number)==0){
         while(--TIMER > 0){
             f(ys,number,a);
-            mpz_sub(tmp,x,y);
+            mpz_sub(tmp,x,ys);
             mpz_abs(tmp,tmp);
             mpz_gcd(d,tmp,number);
-            if(mpz_cmp_ui(d, 1) != 0){
+            
+			if(mpz_cmp_ui(d, 1) != 0){
                 mpz_clear(q);
                 mpz_clear(x);
                 mpz_clear(y);
@@ -233,6 +241,8 @@ int brents(mpz_t d, mpz_t number, unsigned long a){
                 return 1;
             }
         }
+		
+CLEARZ:
         mpz_clear(q);
         mpz_clear(x);
         mpz_clear(y);
