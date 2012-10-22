@@ -185,6 +185,63 @@ int pollardsRoh(mpz_t d, mpz_t number, unsigned long a) {
 
 int fermat(mpz_t d, mpz_t n) {
     gmp_fprintf(stderr,"Fermat: %Zd\n", n);
+
+	mpz_t a, b;
+	mpz_init(a);
+	mpz_init(b);
+
+	mpz_t s, u, v, r;
+	mpz_init(s);
+	mpz_sqrt(s, n);
+	mpz_add_ui(s, s, 1);
+
+	mpz_init(u);
+	mpz_mul_ui(u, s, 2);
+	mpz_add_ui(u, s, 1);
+
+	mpz_init_set_ui(v, 1);
+
+	mpz_init(r);
+	mpz_mul(r, s, s);
+	mpz_sub(r, r, n);
+
+	while (mpz_cmp_ui(r, 0) != 0) {
+		if (--TIMER < 0){
+			return 0;
+		}
+
+		while (mpz_cmp_ui(r, 0) > 0) {
+			if (--TIMER < 0){
+				return 0;
+			}
+			mpz_sub(r, r, v);
+			mpz_add_ui(v, v, 2);
+		}
+
+		if (mpz_cmp_ui(r, 0) < 0) {
+			mpz_add(r, r, u);
+			mpz_add_ui(u, u, 2);
+		}
+	}
+
+	mpz_add(a, u, v);
+	mpz_sub_ui(a, a, 2);
+	mpz_divexact_ui(a, a, 2);
+
+	mpz_sub(b, u, v);
+	mpz_divexact_ui(b, b, 2);
+
+	mpz_set(d, a);
+
+	mpz_clear(s);
+	mpz_clear(u);
+	mpz_clear(v);
+	mpz_clear(r);
+
+	return 1;
+/*
+
+
 	mpz_t a, b, t;
 	mpz_init(a);
 	mpz_init(b);
@@ -214,6 +271,7 @@ int fermat(mpz_t d, mpz_t n) {
 	mpz_add(d, d, a);
 
 	return 1;
+	*/
 }
 
 int brents(mpz_t d, mpz_t number, unsigned long a, mpz_t y){
