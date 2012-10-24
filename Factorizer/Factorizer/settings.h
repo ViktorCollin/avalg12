@@ -9,17 +9,21 @@
 #ifndef Factorizer_setting_h
 #define Factorizer_setting_h
 
-#define NUMBERS 100
+#define NUMBERS 1
 #define MAXNUMBEROFDIGITS 40
 
 #define BRENTS 0
 #define POLLARDS 0
 #define FERMAT 1
 
+#define USE_TIIMER 0
+
 #if BRENTS
 #define TIMER_MAX 5240
 #elif FERMAT
 #define TIMER_MAX 85000
+#elif POLLARDS
+#define TIMER_MAX 5240
 #endif
 
 #define MIN(a,b) (a>b?b:a)

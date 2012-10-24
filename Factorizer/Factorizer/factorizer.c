@@ -42,15 +42,22 @@ void find_perfect_power(mpz_t base, unsigned long * exp, mpz_t number) {
 }
 
 unsigned int trail_division(list * factors, mpz_t number, int count) {
-	mpz_t q, r, div;
+	mpz_t q, r, div, sqrtN;
 	mpz_init(q);
 	mpz_init(r);
 	mpz_init(div);
+	mpz_init(sqrtN);
 
 	unsigned int found = 0;	
 	int i = 0;
 
+	mpz_sqrt(sqrtN, number);
+
+
 	while (mpz_cmp_ui(number, 1) != 0 && i < NUMBER_OF_PRIMES) {
+		if (mpz_cmp_ui(sqrtN, primes[i]) < 0) {
+			break;
+		}
 		// number = q*d + r
 		mpz_tdiv_qr_ui(q, r, number, primes[i]);
 
@@ -70,17 +77,21 @@ unsigned int trail_division(list * factors, mpz_t number, int count) {
 	mpz_clear(div);
 	mpz_clear(q);
 	mpz_clear(r);
+	mpz_clear(sqrtN);
 
 	return found;
 }
 
 void factorize(list * factors, mpz_t number, int count, mpz_t y) {
+#if USE_TIMER
 	if (--TIMER < 0) {
 		factors->failed = 1;
 		return;
 	}
-
+	
 	fprintf(stderr, "TIMER: %d\n", TIMER);
+#endif
+
 
 	if (factors->failed) {
 		TRACE("list is marked as failed.");
@@ -138,116 +149,49 @@ void factorize(list * factors, mpz_t number, int count, mpz_t y) {
 
 int pollardsRoh(mpz_t d, mpz_t number, unsigned long a) {
 	gmp_fprintf(stderr,"Pollards roh: %Zd, a:%lu\n", number, a);
-	if (mpz_even_p(number)) {
-		mpz_set_ui(d, 2);
-		return 1;
-        
-	} else {
-		mpz_t x, y;
-		mpz_init_set_ui(x, 1);
-		mpz_init_set_ui(y, 1);
-		mpz_set_ui(d, 1);
+	mpz_t x, y;
+	mpz_init_set_ui(x, 1);
+	mpz_init_set_ui(y, 1);
+	mpz_set_ui(d, 1);
 
-		mpz_t z;
-		mpz_init_set_ui(z, 1);
+	mpz_t z;
+	mpz_init_set_ui(z, 1);
 
-		while (!mpz_cmp_ui(d, 1)) {
-			for (int i = 0; i < 100; i++) {
-                if (--TIMER < 0){
-                    return 0;
-                }
-				f(x, number, a);
-				f(y, number, a);
-				f(y, number, a);
-
-				mpz_sub(d, x, y);
-				mpz_mul(z, z, d);
-				mpz_mod(z, z, number);
+	while (!mpz_cmp_ui(d, 1)) {
+		for (int i = 0; i < 100; i++) {
+#if USE_TIMER
+			if (--TIMER < 0){
+				return 0;
 			}
+#endif
+			f(x, number, a);
+			f(y, number, a);
+			f(y, number, a);
 
-			mpz_abs(z, z);
-			mpz_gcd(d, z, number);
-	
+			mpz_sub(d, x, y);
+			mpz_mul(z, z, d);
+			mpz_mod(z, z, number);
 		}
-		
-		mpz_clear(x);
-		mpz_clear(y);
 
-		mpz_clear(z);
+		mpz_abs(z, z);
+		mpz_gcd(d, z, number);
 
-		if (mpz_cmp(d, number) == 0) {
-			return pollardsRoh(d, number, a + 1);
-		}
-       
-		return 1;
 	}
+
+	mpz_clear(x);
+	mpz_clear(y);
+
+	mpz_clear(z);
+
+	if (mpz_cmp(d, number) == 0) {
+		return pollardsRoh(d, number, a + 1);
+	}
+
+	return 1;
 }
 
 int fermat(mpz_t d, mpz_t n) {
     gmp_fprintf(stderr,"Fermat: %Zd\n", n);
-
-	/***
-	 * Enligt någon webpage på internet ska detta vara Dixons algoritm
-	 * Vettefan om det är sant dock :-) 22p på Kattis
-	 *
-	 * Tror vi kanske ska välja Fermat (längst ner) ändå eftersom den nog
-	 * är mer lättförklarad! Jag fattar inget av denna :-)
-	 */
-
-	mpz_t x, xx, y, q, rt;
-
-	mpz_init(rt);
-	mpz_init(x);
-	mpz_init(xx);
-	mpz_init(y);
-	mpz_init(q);
-	
-	if (mpz_root(rt, n, 2)) {
-		mpz_set(d, rt);
-		return 1;
-	}
-	
-	mpz_set(x, rt);
-
-	while (1) {
-		if (--TIMER < 0){
-			return 0;
-		}
-
-		mpz_add_ui(x, x, 1);
-
-		mpz_gcd(d, x, n);
-		
-		//if (1<d && d<n)
-		if (mpz_cmp_ui(d, 1) > 0 && mpz_cmp(n,d) > 0) {
-			return 1;
-		}
-
-		mpz_mul(xx, x, x);
-		mpz_mod(x, x, n);
-		
-		if (mpz_root(y, xx, 2)) {
-			mpz_sub(q, x, y);
-			mpz_mod(q, q, n);
-
-			mpz_gcd(d, q, n);
-			
-			if (mpz_cmp_ui(d, 1) > 0 && mpz_cmp(n,d) > 0) {
-				return 1;
-			}		
-		}
-	}
-	/*	At this point the loop would stop after a few times, and then
-	 *	*	we would try to construct a perfect square by expressing the
-	 *	*	previous r^2 in terms of an exponent vector with
-	 *	*	primes {2, 3, ..., k} as a basis, for some k.  Then row reduce
-	 *	*	until I find a solution in terms of each vector with only even
-	 *	*	entries.  Thus the result would also be a perfect square.
-	 *	*		I hope to impliment this later. -Paul.
-	 *	*/
-	return 0;
-
-/*
 
 
 	mpz_t a, b, t;
@@ -265,9 +209,11 @@ int fermat(mpz_t d, mpz_t n) {
 	mpz_sub(b, b, n);
 
 	while (!mpz_root(d, b, 2)) {
+#if USE_TIMER
 		if (--TIMER < 0){
 			return 0;
 		}
+#endif
 
 		mpz_add_ui(a, a, 1);
 
@@ -279,7 +225,6 @@ int fermat(mpz_t d, mpz_t n) {
 	mpz_add(d, d, a);
 
 	return 1;
-	*/
 }
 
 int brents(mpz_t d, mpz_t number, unsigned long a, mpz_t y){
@@ -308,10 +253,11 @@ int brents(mpz_t d, mpz_t number, unsigned long a, mpz_t y){
 
         k = 0;
         while (k<r && mpz_cmp_ui(d, 1)==0){
+#if USE_TIMER
 			if (--TIMER < 0) {
-				fprintf(stderr, "Nu timar jag out!\n");
 				goto FAILURE;
 			}
+#endif
 
             mpz_set(ys,y);
             for(i=0;i<MIN(m,r-k);i++){
@@ -328,7 +274,7 @@ int brents(mpz_t d, mpz_t number, unsigned long a, mpz_t y){
     }
 
     if(mpz_cmp(d,number)==0){
-        while(--TIMER > 0){
+        while (1){
             f(ys,number,a);
             mpz_sub(tmp,x,ys);
             mpz_gcd(d,tmp,number);
@@ -336,9 +282,16 @@ int brents(mpz_t d, mpz_t number, unsigned long a, mpz_t y){
 			if(mpz_cmp_ui(d, 1) != 0){
 				goto SUCCESS;
             }
+
+#if USE_TIMER
+			if (--TIMER <0)
+				break;
+#endif
         }
-		
+
+#ifdef USE_TIMER
 FAILURE:
+#endif
         mpz_clear(q);
         mpz_clear(x);
         mpz_clear(ys);

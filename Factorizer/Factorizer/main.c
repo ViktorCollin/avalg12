@@ -37,6 +37,8 @@ void printFactors(list * factors){
 }
 
 int main(int argc, const char * argv[]){
+	clock_t begin = clock();
+
     if(argc == 1){
 		// standard mode
 		mpz_t numbers[NUMBERS];
@@ -61,6 +63,10 @@ int main(int argc, const char * argv[]){
 		for (i = 0; i < NUMBERS; i++){
 			printFactors(calculatedFactors[i]);
 		}
+
+		clock_t end = clock();
+		double tdiff = (((double) end) - ((double)begin)) / CLOCKS_PER_SEC;
+		printf(", %f\n", tdiff);
 		
 		return 0;
 		
