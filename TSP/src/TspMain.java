@@ -1,11 +1,12 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Dictionary;
 
 
 
 public class TspMain {
-	float[][] distanceMatrix;
+	int[][] distanceMatrix;
 	TspNode[] nodes;
 	Visulizer graph;
 	/**
@@ -20,7 +21,7 @@ public class TspMain {
 		try {
 			int numNodes = Integer.parseInt(in.readLine());
 			nodes = new TspNode[numNodes];
-			distanceMatrix = new float[numNodes][numNodes];
+			distanceMatrix = new int[numNodes][numNodes];
 			for(int i=0;i<numNodes;i++){
 				String line = in.readLine();
 				String[] xy = line.split(" ");
@@ -34,6 +35,17 @@ public class TspMain {
 				}
 				graph.drawEdges(order);
 			}
+			for(int i=0;i<numNodes;i++){
+				for(int j=0;j<numNodes;j++){
+					if(i == j) continue;
+					float dx = Math.abs(nodes[i].xPos - nodes[j].xPos);
+					float dy = Math.abs(nodes[i].yPos - nodes[j].yPos);
+					distanceMatrix[i][j] = (int) Math.round(Math.hypot(dx, dy));
+					
+					
+				}
+			}
+			
 			
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
