@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Dictionary;
 
 
 
@@ -27,23 +26,32 @@ public class TspMain {
 				String[] xy = line.split(" ");
 				nodes[i] = new TspNode(i, Float.parseFloat(xy[0]), Float.parseFloat(xy[1]));
 			}
-			if(visulize){
-				graph = new Visulizer(nodes);
-				int[] order = new int[numNodes];
-				for(int i=0;i<numNodes;i++){
-					order[i] = i;
-				}
-				graph.drawEdges(order);
-			}
+			
 			for(int i=0;i<numNodes;i++){
 				for(int j=0;j<numNodes;j++){
 					if(i == j) continue;
 					float dx = Math.abs(nodes[i].xPos - nodes[j].xPos);
 					float dy = Math.abs(nodes[i].yPos - nodes[j].yPos);
 					distanceMatrix[i][j] = (int) Math.round(Math.hypot(dx, dy));
-					
-					
 				}
+			}
+			if(visulize){
+				graph = new Visulizer(nodes);
+				/*
+				 * test tar bara noderna i ordning
+				 */
+				
+				int[] order = new int[numNodes];
+				int cost = 0;
+				for(int i=0;i<numNodes;i++){
+					if(i == numNodes-1){
+						cost += distanceMatrix[0][numNodes-1];
+					}else{
+						cost += distanceMatrix[i][i+1];
+					}
+					order[i] = i;
+				}
+				graph.drawEdges(order, cost);
 			}
 			
 			
@@ -54,5 +62,4 @@ public class TspMain {
 			e.printStackTrace();
 		}
 	}
-
 }

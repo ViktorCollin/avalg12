@@ -5,10 +5,10 @@ public class Visulizer{
 	/**
 	 * 
 	 */
-	private static final int SIZE_X = 500;
-	private static final int SIZE_Y = 500; 
+	private static final int SIZE_X = 660;
+	private static final int SIZE_Y = 660; 
 	private static final int PADDING = 30;
-	private static final int CIRCLEDIAMETER = 16;
+	private static final int CIRCLEDIAMETER = 10;
 	private float maxX = Float.MIN_VALUE;
 	private float minX = Float.MAX_VALUE;
 	private float maxY = Float.MIN_VALUE;
@@ -33,16 +33,26 @@ public class Visulizer{
 		myCanvas.setForegroundColor(Color.RED);
 		for(int i=0;i<numNodes;i++){
 			myCanvas.fillCircle(scaleX(nodes[i].xPos)-CIRCLEDIAMETER/2, scaleY(nodes[i].yPos)-CIRCLEDIAMETER/2, CIRCLEDIAMETER);
-			System.out.println(i + ": scaleX="+scaleX(nodes[i].xPos) + " scaleY="+scaleY(nodes[i].yPos));
 		}
 		
 	}
-	public void drawEdges(int[] order){
+	
+	public void drawEdges(int[] order, int cost){
 		myCanvas.setForegroundColor(Color.CYAN);
 		for(int i=1;i<order.length;i++){
 			myCanvas.drawLine(scaleX(nodes[i-1].xPos), scaleY(nodes[i-1].yPos), scaleX(nodes[i].xPos), scaleY(nodes[i].yPos));
 		}
 		myCanvas.drawLine(scaleX(nodes[0].xPos), scaleY(nodes[0].yPos), scaleX(nodes[order.length-1].xPos), scaleY(nodes[order.length-1].yPos));
+		myCanvas.drawString("Total cost: "+cost, 10, SIZE_Y-10);
+	}
+	
+	public void drawEdges(TspNode[] nodes, int cost){
+		myCanvas.setForegroundColor(Color.CYAN);
+		for(int i=1;i<nodes.length;i++){
+			myCanvas.drawLine(scaleX(nodes[i-1].xPos), scaleY(nodes[i-1].yPos), scaleX(nodes[i].xPos), scaleY(nodes[i].yPos));
+		}
+		myCanvas.drawLine(scaleX(nodes[0].xPos), scaleY(nodes[0].yPos), scaleX(nodes[nodes.length-1].xPos), scaleY(nodes[nodes.length-1].yPos));
+		myCanvas.drawString("Total cost: "+cost, 10, SIZE_Y-10);
 	}
 	
 	public int scaleX(float x){
