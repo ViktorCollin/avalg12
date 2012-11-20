@@ -18,7 +18,6 @@ public class Visulizer{
 	Canvas myCanvas;
 	TspNode[] nodes;
 
-
 	public Visulizer(TspNode[] nodes) {
 		this.nodes = nodes;
 		numNodes = nodes.length;
@@ -28,30 +27,38 @@ public class Visulizer{
 			minY = nodes[i].yPos < minY ? nodes[i].yPos : minY;
 			maxY = nodes[i].yPos > maxY ? nodes[i].yPos : maxY;
 		}
+
 		myCanvas = new Canvas("TSP Graph", SIZE_X, SIZE_Y, new Color(0));
 		myCanvas.setVisible(true);
+		drawNodes();
+		
+	}
+	public void drawNodes(){
 		myCanvas.setForegroundColor(Color.RED);
 		for(int i=0;i<numNodes;i++){
 			myCanvas.fillCircle(scaleX(nodes[i].xPos)-CIRCLEDIAMETER/2, scaleY(nodes[i].yPos)-CIRCLEDIAMETER/2, CIRCLEDIAMETER);
 		}
-		
 	}
 	
 	public void drawEdges(int[] order, int cost){
+		myCanvas.erase();
+		drawNodes();
 		myCanvas.setForegroundColor(Color.CYAN);
 		for(int i=1;i<order.length;i++){
-			myCanvas.drawLine(scaleX(nodes[i-1].xPos), scaleY(nodes[i-1].yPos), scaleX(nodes[i].xPos), scaleY(nodes[i].yPos));
+			myCanvas.drawLine(scaleX(nodes[order[i-1]].xPos), scaleY(nodes[order[i-1]].yPos), scaleX(nodes[order[i]].xPos), scaleY(nodes[order[i]].yPos));
 		}
-		myCanvas.drawLine(scaleX(nodes[0].xPos), scaleY(nodes[0].yPos), scaleX(nodes[order.length-1].xPos), scaleY(nodes[order.length-1].yPos));
+		myCanvas.drawLine(scaleX(nodes[order[0]].xPos), scaleY(nodes[order[0]].yPos), scaleX(nodes[order[order.length-1]].xPos), scaleY(nodes[order[order.length-1]].yPos));
 		myCanvas.drawString("Total cost: "+cost, 10, SIZE_Y-10);
 	}
 	
-	public void drawEdges(TspNode[] nodes, int cost){
+	public void drawEdges(TspNode[] node, int cost){
+		myCanvas.erase();
+		drawNodes();
 		myCanvas.setForegroundColor(Color.CYAN);
-		for(int i=1;i<nodes.length;i++){
-			myCanvas.drawLine(scaleX(nodes[i-1].xPos), scaleY(nodes[i-1].yPos), scaleX(nodes[i].xPos), scaleY(nodes[i].yPos));
+		for(int i=1;i<node.length;i++){
+			myCanvas.drawLine(scaleX(node[i-1].xPos), scaleY(node[i-1].yPos), scaleX(node[i].xPos), scaleY(node[i].yPos));
 		}
-		myCanvas.drawLine(scaleX(nodes[0].xPos), scaleY(nodes[0].yPos), scaleX(nodes[nodes.length-1].xPos), scaleY(nodes[nodes.length-1].yPos));
+		myCanvas.drawLine(scaleX(node[0].xPos), scaleY(node[0].yPos), scaleX(node[node.length-1].xPos), scaleY(node[node.length-1].yPos));
 		myCanvas.drawString("Total cost: "+cost, 10, SIZE_Y-10);
 	}
 	
