@@ -2,8 +2,7 @@ import java.util.Random;
 
 
 public class Generator {
-	public static final int min = (int) -Math.pow(10, 6);
-	public static final int max = (int) Math.pow(10, 6);
+	public static final int MAX = 500; // must be >0
 	/**
 	 * @param args
 	 */
@@ -39,14 +38,21 @@ public class Generator {
 	public void random(int numNodes){
 		Random rnd = new Random();
 		for(int i=0;i<numNodes;i++){
-			System.out.println((rnd.nextFloat()*2*max-max)+" "+(rnd.nextFloat()*2*max-max));
+			System.out.println((rnd.nextFloat()*MAX)+" "+(rnd.nextFloat()*MAX));
 		}
 	}
 	
 	public void dense(int numNodes) {
 		Random rnd = new Random();
-		for(int i=0;i<numNodes;i++){
-			System.out.println((rnd.nextGaussian()*2*max-max)+" "+(rnd.nextGaussian()*2*max-max));
+		int size = MAX/2;
+		double[] numbers = new double[2*numNodes];
+		double max = 0;
+		for(int i=0;i<numbers.length;i++){
+			numbers[i] = rnd.nextGaussian();
+			if(Math.abs(numbers[i]) > max) max = Math.abs(numbers[i]);
+		}
+		for(int i=0;i<numbers.length;i+=2){
+			System.out.println((size*numbers[i]/max + size)+" "+(size*numbers[i+1]/max + size));
 		}
 		
 	}

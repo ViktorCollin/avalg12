@@ -9,6 +9,7 @@ import java.util.LinkedList;
 
 
 public class TspMain {
+	private static final boolean DEBUG = true;
 	int[][] distanceMatrix;
 	TspNode[] nodes;
 	int numNodes;
@@ -42,6 +43,9 @@ public class TspMain {
 				maxX = nodes[i].xPos > maxX ? nodes[i].xPos : maxX;
 				minY = nodes[i].yPos < minY ? nodes[i].yPos : minY;
 				maxY = nodes[i].yPos > maxY ? nodes[i].yPos : maxY;
+				if(DEBUG){
+					System.out.println("minX="+minX+", maxX="+maxX+", minY="+minY+", maxY="+maxY);
+				}
 			}
 			
 			for(int i=0;i<numNodes;i++){
@@ -68,9 +72,10 @@ public class TspMain {
 				}
 				graph.drawEdges(order, cost);
 				 */
-				graph.drawEdges(clarkWright(), cost);
+				
 			}
-			
+			TspNode[] tour = clarkWright();
+			if(visulize) graph.drawEdges(tour, cost);
 			
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
@@ -81,6 +86,9 @@ public class TspMain {
 	
 	public TspNode[] clarkWright(){
 		TspNode middle = new TspNode(-1, (maxX-minX)/2, (maxY-minY)/2);
+		if(DEBUG){
+			System.out.println("centerX="+middle.xPos+", centerY="+middle.yPos);
+		}
 		int centerDistance = calcDistance(middle, nodes[0]);
 		TspNode hub = nodes[0]; 
 		for(int i=1;i<numNodes;i++){
@@ -89,6 +97,9 @@ public class TspMain {
 				hub = nodes[i];
 				centerDistance = newDist;
 			}
+		}
+		if(DEBUG){
+			System.out.println("centerNodeX="+hub.xPos+", centerNodeY="+hub.yPos);
 		}
 		
 		if(visulize){
@@ -126,7 +137,7 @@ public class TspMain {
 		result.add(edge.from);
 		result.add(edge.to);
 		cost = distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
-		while(result.size() < numNodes-2){
+		while(result.size() < numNodes-1){
 			for(int i=queue.size()-1;i>=0;i--){
 				edge = queue.get(i);
 				if(result.contains(edge.from) ^ result.contains(edge.to)){
@@ -134,18 +145,22 @@ public class TspMain {
 						result.addFirst(edge.to);
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
+						break;
 					} else if(result.getFirst().equals(edge.to)){
 						result.addFirst(edge.from);
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
+						break;
 					} else if(result.getLast().equals(edge.from)){
 						result.addLast(edge.to);
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
+						break;
 					} else if(result.getLast().equals(edge.to)){
 						result.addLast(edge.from);
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
+						break;
 					}
 				}
 			}
@@ -165,6 +180,18 @@ public class TspMain {
 			
 		}
 		return result;
+	}
+	
+	public TspNode[] twoOpt(TspNode[] tour){
+		boolean change = true;
+		while(change){
+			for(int i=0;i<numNodes;i++){
+				for(int j=0;j<numNodes;j++){
+					
+				}
+			}
+		}
+		return tour;
 	}
 	
 	public int calcDistance(TspNode a, TspNode b){
