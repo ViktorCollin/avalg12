@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,8 +30,8 @@ public class TspMain {
 	
 	public TspMain(boolean visulize){
 		this.visulize = visulize;
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		try {
+			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			numNodes = Integer.parseInt(in.readLine());
 			nodes = new TspNode[numNodes];
 			distanceMatrix = new int[numNodes][numNodes];
@@ -47,7 +48,7 @@ public class TspMain {
 					System.out.println("minX="+minX+", maxX="+maxX+", minY="+minY+", maxY="+maxY);
 				}
 			}
-			
+			in.close();
 			for(int i=0;i<numNodes;i++){
 				for(int j=i+1;j<numNodes;j++){
 					distanceMatrix[i][j] = calcDistance(nodes[i], nodes[j]);
@@ -114,13 +115,10 @@ public class TspMain {
 				order[ith+1] = hub.nodeNumber;
 				ith += 2;
 			}
-			for(int i=0;i<order.length;i++){
-				System.out.print(order[i]+", ");
-			}
 			graph.drawEdges(order, 0);
 			
 		}
-		
+		if(DEBUG) System.out.println("Savnings... begin");
 		LinkedList<Savings> queue = new LinkedList<Savings>(); 
 		for(int i=0;i<numNodes;i++){
 			if(i == hub.nodeNumber) continue;
@@ -130,9 +128,10 @@ public class TspMain {
 				queue.add(new Savings(nodes[i], nodes[j], saving));
 			}
 		}
-		Collections.sort(queue);
 		
-		LinkedList<TspNode> result = new LinkedList<TspNode>();
+		Collections.sort(queue);
+		if(DEBUG) System.out.println("Savnings... DONE!");
+		ArrayList<TspNode> result = new ArrayList<TspNode>();
 		Savings edge = queue.pollLast();
 		result.add(edge.from);
 		result.add(edge.to);
@@ -141,33 +140,34 @@ public class TspMain {
 			for(int i=queue.size()-1;i>=0;i--){
 				edge = queue.get(i);
 				if(result.contains(edge.from) ^ result.contains(edge.to)){
-					if(result.getFirst().equals(edge.from)){
-						result.addFirst(edge.to);
+					if(result.get(0).equals(edge.from)){
+						result.add(0,edge.to);
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
 						break;
-					} else if(result.getFirst().equals(edge.to)){
-						result.addFirst(edge.from);
+					} else if(result.get(0).equals(edge.to)){
+						result.add(0,edge.from);
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
 						break;
-					} else if(result.getLast().equals(edge.from)){
-						result.addLast(edge.to);
+					} else if(result.get(result.size()-1).equals(edge.from)){
+						result.add(edge.to);
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
 						break;
-					} else if(result.getLast().equals(edge.to)){
-						result.addLast(edge.from);
+					} else if(result.get(result.size()-1).equals(edge.to)){
+						result.add(edge.from);
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
 						break;
 					}
 				}
 			}
+			if(DEBUG) System.out.println(result.size()+" edges found");
 		}
 		result.add(hub);
-		cost += distanceMatrix[result.getLast().nodeNumber][hub.nodeNumber];
-		cost += distanceMatrix[result.getFirst().nodeNumber][hub.nodeNumber];
+		cost += distanceMatrix[result.get(result.size()-1).nodeNumber][hub.nodeNumber];
+		cost += distanceMatrix[result.get(0).nodeNumber][hub.nodeNumber];
 		return result.toArray(new TspNode[]{});
 	}
 	
