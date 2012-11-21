@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 
 
@@ -132,31 +133,40 @@ public class TspMain {
 		Collections.sort(queue);
 		if(DEBUG) System.out.println("Savnings... DONE!");
 		ArrayList<TspNode> result = new ArrayList<TspNode>();
+		boolean[] visited = new boolean[numNodes];
 		Savings edge = queue.pollLast();
 		result.add(edge.from);
 		result.add(edge.to);
+		visited[edge.from.nodeNumber] = true;
+		visited[edge.to.nodeNumber] = true;
+		
 		cost = distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
+		
 		while(result.size() < numNodes-1){
 			for(int i=queue.size()-1;i>=0;i--){
 				edge = queue.get(i);
-				if(result.contains(edge.from) ^ result.contains(edge.to)){
+				if(visited[edge.from.nodeNumber] ^ visited[edge.to.nodeNumber]){
 					if(result.get(0).equals(edge.from)){
 						result.add(0,edge.to);
+						visited[edge.to.nodeNumber] = true;
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
 						break;
 					} else if(result.get(0).equals(edge.to)){
-						result.add(0,edge.from);
+						result.add(0,edge.to);
+						visited[edge.from.nodeNumber] = true;
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
 						break;
 					} else if(result.get(result.size()-1).equals(edge.from)){
 						result.add(edge.to);
+						visited[edge.to.nodeNumber] = true;
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
 						break;
 					} else if(result.get(result.size()-1).equals(edge.to)){
 						result.add(edge.from);
+						visited[edge.from.nodeNumber] = true;
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
 						break;
