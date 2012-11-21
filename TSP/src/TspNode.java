@@ -7,6 +7,8 @@ public class TspNode {
 	float xPos;
 	float yPos;
 	
+	int edges = 0;
+	
 
 	public TspNode(int nodeNumber, float xPos, float yPos) {
 		this.nodeNumber = nodeNumber;
@@ -35,6 +37,11 @@ public class TspNode {
 		if (Float.floatToIntBits(yPos) != Float.floatToIntBits(other.yPos))
 			return false;
 		return true;
+	}
+	
+	@Override
+	public String toString() {
+		return String.valueOf(nodeNumber);
 	}
 
 }

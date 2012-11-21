@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Set;
+import java.util.List;
 
 public class TspMain {
 	private static final boolean DEBUG = true;
@@ -82,12 +82,48 @@ public class TspMain {
 			e.printStackTrace();
 		}
 	}
+	
+	public int findHubIndex() {
+		int hub = 0;
+		int maxDistance = 0;
+		TspNode middle = new TspNode(-1, (maxX-minX)/2, (maxY-minY)/2);
+		for (int i = 0; i < numNodes; i++) {
+			int newDist = calcDistance(middle, nodes[i]);
+			if (maxDistance > newDist) {
+				hub = i;
+				maxDistance = newDist;
+			}
+		}
+		
+		return hub;
+	}
+	
 
-	public TspNode[] clarkWright() {
-		TspNode middle = new TspNode(-1, (maxX - minX) / 2, (maxY - minY) / 2);
-		if (DEBUG) {
-			System.out.println("centerX=" + middle.xPos + ", centerY="
-					+ middle.yPos);
+	private boolean findGraphLoop(int x, int y, List<Savings> edges, int color) {
+		
+		while (x != -1 && x != y) {
+			boolean progress = false;
+			
+			for (Savings e : edges) {
+				if (e.color != color && e.contains(x)) {
+					x = e.getVertex(x);
+					e.color = color;
+					progress = true;
+					break;
+				}
+			}
+			
+			if (!progress)
+				break;
+		}
+		
+		return x == y;
+	}
+	
+	public TspNode[] clarkWright(){
+		TspNode middle = new TspNode(-1, (maxX-minX)/2, (maxY-minY)/2);
+		if(DEBUG){
+			System.out.println("centerX="+middle.xPos+", centerY="+middle.yPos);
 		}
 		int centerDistance = calcDistance(middle, nodes[0]);
 		TspNode hub = nodes[0];
@@ -117,7 +153,6 @@ public class TspMain {
 				ith += 2;
 			}
 			graph.drawEdges(order, 0);
-
 		}
 		if (DEBUG)
 			System.out.println("Savnings... begin");
@@ -131,60 +166,106 @@ public class TspMain {
 				int saving = distanceMatrix[hub.nodeNumber][i]
 						+ distanceMatrix[hub.nodeNumber][j]
 						- distanceMatrix[j][i];
-				queue.add(new Savings(nodes[i], nodes[j], saving));
+				
+				Savings edge;
+				if (i > j)
+					edge = new Savings(nodes[j], nodes[i], saving);
+				else
+					edge = new Savings(nodes[i], nodes[j], saving);
+				
+				queue.add(edge);
 			}
 		}
 
 		Collections.sort(queue);
+		
 		if (DEBUG)
 			System.out.println("Savnings... DONE!");
-		ArrayList<TspNode> result = new ArrayList<TspNode>();
-		boolean[] visited = new boolean[numNodes];
-		Savings edge = queue.pollLast();
-		result.add(edge.from);
-		result.add(edge.to);
-		visited[edge.from.nodeNumber] = true;
-		visited[edge.to.nodeNumber] = true;
 
-		cost = distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
-
-		while (result.size() < numNodes - 1) {
+		ArrayList<Savings> edges = new ArrayList<Savings>();
+						
+		int color = 0;
+		
+		while (edges.size() < numNodes - 2) {			
 			for (int i = queue.size() - 1; i >= 0; i--) {
-				edge = queue.get(i);
-				if (visited[edge.from.nodeNumber] ^ visited[edge.to.nodeNumber]) {
-					if (result.get(0).equals(edge.from)) {
-						result.add(0, edge.to);
-						visited[edge.to.nodeNumber] = true;
-						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
-						queue.remove(i);
-						break;
-					} else if (result.get(0).equals(edge.to)) {
-						result.add(0, edge.from);
-						visited[edge.from.nodeNumber] = true;
-						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
-						queue.remove(i);
-						break;
-					} else if (result.get(result.size() - 1).equals(edge.from)) {
-						result.add(edge.to);
-						visited[edge.to.nodeNumber] = true;
-						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
-						queue.remove(i);
-						break;
-					} else if (result.get(result.size() - 1).equals(edge.to)) {
-						result.add(edge.from);
-						visited[edge.from.nodeNumber] = true;
-						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
+				Savings edge = queue.get(i);
+				TspNode from = edge.from;
+				TspNode to = edge.to;
+				
+				if (from.edges < 2 && to.edges < 2) {
+					
+					if (
+						findGraphLoop(from.nodeNumber, to.nodeNumber, edges, ++color) ||
+						findGraphLoop(to.nodeNumber, from.nodeNumber, edges, ++color)
+					) {
 						queue.remove(i);
 						break;
 					}
+					
+					System.out.println("Okej, vi vill ha en kant från " + from.nodeNumber + " till " + to.nodeNumber);
+					
+					from.edges++;
+					to.edges++;
+					edges.add(edge);
+
+					
+					queue.remove(i);
+					break;
+				} else if (from.edges == 2 && to.edges == 2) {
+					queue.remove(i);
+					break;
 				}
 			}
-			if (DEBUG)
-				System.out.println(result.size() + " edges found");
 		}
-		result.add(hub);
-		cost += distanceMatrix[result.get(result.size() - 1).nodeNumber][hub.nodeNumber];
-		cost += distanceMatrix[result.get(0).nodeNumber][hub.nodeNumber];
+		
+
+		System.out.println(edges);
+		
+		// Add the hub
+		for (TspNode node : nodes) {
+			if (node.nodeNumber == hub.nodeNumber)
+				continue;
+			
+			if (node.edges == 1)
+				edges.add(new Savings(node, hub, 0));
+		}
+		
+		
+		ArrayList<TspNode> result = new ArrayList<TspNode>();
+
+		// Walk!
+		TspNode x = nodes[0]; // Start
+		result.add(x);
+		
+		LOOP: // Dryg som fan. Gör om.
+		while (true) {
+			for (int i = 0; i < edges.size(); i++) {
+				Savings edge = edges.get(i);
+				if (edge.from.nodeNumber == x.nodeNumber) {
+					x = edge.to;
+					
+					edges.remove(i);
+					result.add(x);
+					if (x.nodeNumber == nodes[0].nodeNumber)
+						break LOOP;
+					else
+						break;
+				} else if (edge.to.nodeNumber == x.nodeNumber) {
+					x = edge.from;
+					
+					edges.remove(i);
+					result.add(x);
+					if (x.nodeNumber == nodes[0].nodeNumber)
+						break LOOP;
+					else
+						break;
+				}
+			}			
+		}
+		
+		System.out.println(result);
+		
+		
 		return result.toArray(new TspNode[] {});
 	}
 
