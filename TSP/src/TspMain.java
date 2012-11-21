@@ -47,8 +47,8 @@ public class TspMain {
 				minY = nodes[i].yPos < minY ? nodes[i].yPos : minY;
 				maxY = nodes[i].yPos > maxY ? nodes[i].yPos : maxY;
 				if (DEBUG) {
-					System.out.println("minX=" + minX + ", maxX=" + maxX
-							+ ", minY=" + minY + ", maxY=" + maxY);
+//					System.out.println("minX=" + minX + ", maxX=" + maxX
+//							+ ", minY=" + minY + ", maxY=" + maxY);
 				}
 			}
 			in.close();
@@ -75,6 +75,10 @@ public class TspMain {
 			TspNode[] tour = clarkWright();
 			if (visulize)
 				graph.drawEdges(tour, cost);
+			
+			if (!DEBUG)
+				for (TspNode x : tour)
+					System.out.println(x.nodeNumber);
 
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
@@ -154,8 +158,10 @@ public class TspMain {
 			}
 			graph.drawEdges(order, 0);
 		}
+		
 		if (DEBUG)
 			System.out.println("Savnings... begin");
+		
 		LinkedList<Savings> queue = new LinkedList<Savings>();
 		for (int i = 0; i < numNodes; i++) {
 			if (i == hub.nodeNumber)
@@ -201,9 +207,7 @@ public class TspMain {
 						queue.remove(i);
 						break;
 					}
-					
-					System.out.println("Okej, vi vill ha en kant från " + from.nodeNumber + " till " + to.nodeNumber);
-					
+										
 					from.edges++;
 					to.edges++;
 					edges.add(edge);
@@ -219,7 +223,6 @@ public class TspMain {
 		}
 		
 
-		System.out.println(edges);
 		
 		// Add the hub
 		for (TspNode node : nodes) {
@@ -236,34 +239,26 @@ public class TspMain {
 		// Walk!
 		TspNode x = nodes[0]; // Start
 		result.add(x);
+		cost = 0;
 		
-		LOOP: // Dryg som fan. Gör om.
-		while (true) {
+		do {
 			for (int i = 0; i < edges.size(); i++) {
-				Savings edge = edges.get(i);
-				if (edge.from.nodeNumber == x.nodeNumber) {
-					x = edge.to;
-					
-					edges.remove(i);
+				Savings edge = edges.get(i);				
+				
+				if (edge.contains(x.nodeNumber)) {
+					TspNode next = nodes[edge.getVertex(x.nodeNumber)];
+					cost += distanceMatrix[x.nodeNumber][next.nodeNumber];
+					x = next;
 					result.add(x);
-					if (x.nodeNumber == nodes[0].nodeNumber)
-						break LOOP;
-					else
-						break;
-				} else if (edge.to.nodeNumber == x.nodeNumber) {
-					x = edge.from;
-					
 					edges.remove(i);
-					result.add(x);
-					if (x.nodeNumber == nodes[0].nodeNumber)
-						break LOOP;
-					else
-						break;
+					break;
 				}
-			}			
-		}
+			}
+			
+		} while (x.nodeNumber != nodes[0].nodeNumber);
 		
-		System.out.println(result);
+		
+		//System.out.println(result);
 		
 		
 		return result.toArray(new TspNode[] {});
