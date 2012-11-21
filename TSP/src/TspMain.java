@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Set;
 
 
 
@@ -79,6 +78,10 @@ public class TspMain {
 			TspNode[] tour = clarkWright();
 			if(visulize) graph.drawEdges(tour, cost);
 			
+			for(int i=0;i<tour.length;i++){
+				System.out.println(tour[i].nodeNumber);
+			}
+			
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -100,9 +103,7 @@ public class TspMain {
 				centerDistance = newDist;
 			}
 		}
-		if(DEBUG){
-			System.out.println("centerNodeX="+hub.xPos+", centerNodeY="+hub.yPos);
-		}
+		if(DEBUG) System.out.println("centerNodeX="+hub.xPos+", centerNodeY="+hub.yPos);
 		
 		if(visulize){
 			int[] order = new int[2*numNodes-2];
@@ -153,7 +154,7 @@ public class TspMain {
 						queue.remove(i);
 						break;
 					} else if(result.get(0).equals(edge.to)){
-						result.add(0,edge.to);
+						result.add(0,edge.from);
 						visited[edge.from.nodeNumber] = true;
 						cost += distanceMatrix[edge.to.nodeNumber][edge.from.nodeNumber];
 						queue.remove(i);
