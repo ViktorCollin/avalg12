@@ -82,7 +82,7 @@ public class TspMain {
 				graph = new Visulizer(nodesX, nodesY);
 
 			}
-			int[] tour = nerestNeighbor();
+			int[] tour = clarkWright();
 			if (visulize)
 				graph.drawEdges(tour, cost);
 			
@@ -208,33 +208,36 @@ public class TspMain {
 			System.out.println("Savnings... DONE!");
 
 		ArrayList<Savings> edges = new ArrayList<Savings>();
-						
+		
+		
+		byte[] edgeCount = new byte[numNodes];
+		
 		int color = 0;
 		
 		while (edges.size() < numNodes - 2) {			
 			for (int i = queue.size() - 1; i >= 0; i--) {
 				Savings edge = queue.get(i);
-				TspNode from = nodes[edge.from];
-				TspNode to = nodes[edge.to];
+				int from = edge.from;
+				int to = edge.to;
 				
-				if (from.edges < 2 && to.edges < 2) {
+				if (edgeCount[from] < (short) 2 && edgeCount[to] < (short) 2) {
 					
 					if (
-						findGraphLoop(from.nodeNumber, to.nodeNumber, edges, ++color) ||
-						findGraphLoop(to.nodeNumber, from.nodeNumber, edges, ++color)
+						findGraphLoop(from, to, edges, ++color) ||
+						findGraphLoop(to, from, edges, ++color)
 					) {
 						queue.remove(i);
 						break;
 					}
-										
-					from.edges++;
-					to.edges++;
+						
+					edgeCount[from]++;
+					edgeCount[to]++;
 					edges.add(edge);
 
 					
 					queue.remove(i);
 					break;
-				} else if (from.edges == 2 && to.edges == 2) {
+				} else if (edgeCount[from] == 2 && edgeCount[to] == 2) {
 					queue.remove(i);
 					break;
 				}
@@ -244,44 +247,42 @@ public class TspMain {
 
 		
 		// Add the hub
-		for (TspNode node : nodes) {
-			if (node.nodeNumber == hub.nodeNumber)
+		for (int node = 0; node < numNodes; node++) {
+			if (node == hub)
 				continue;
 			
-			if (node.edges == 1)
-				edges.add(new Savings(node.nodeNumber, hub.nodeNumber, 0));
+			if (edgeCount[node] == 1)
+				edges.add(new Savings(node, hub, 0));
 		}
 		
 		
-		ArrayList<TspNode> result = new ArrayList<TspNode>();
+		int[] result = new int[numNodes + 1];
+		int j = 0;
 
 		// Walk!
-		TspNode x = nodes[0]; // Start
-		result.add(x);
+		int x = 0; // Start
+		result[j] = x;
+		j++;
 		cost = 0;
 		
 		do {
 			for (int i = 0; i < edges.size(); i++) {
 				Savings edge = edges.get(i);				
 				
-				if (edge.contains(x.nodeNumber)) {
-					TspNode next = nodes[edge.getVertex(x.nodeNumber)];
-//					cost += distanceMatrix[x.nodeNumber][next.nodeNumber];
+				if (edge.contains(x)) {
+					int next = edge.getVertex(x);
 					x = next;
-					result.add(x);
+					result[j] = x;
+					j++;
+					
 					edges.remove(i);
 					break;
 				}
 			}
 			
-		} while (x.nodeNumber != nodes[0].nodeNumber);
-		
-		
-		//System.out.println(result);
-	
-		
-		
-		return result.toArray(new TspNode[] {});
+		} while (x != 0);
+			
+		return result;
 	}
 
 	public TspNode[] twoOpt(TspNode[] tour) {
