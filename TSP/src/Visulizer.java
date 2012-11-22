@@ -21,6 +21,17 @@ public class Visulizer{
 		drawNodes();
 		
 	}
+	public Visulizer(float[] nodesX, float[] nodesY) {
+		numNodes = nodesX.length;
+		nodes = new TspNode[numNodes];
+		for(int i=0;i<numNodes;i++){
+			nodes[i] = new TspNode(i, nodesX[i], nodesY[i]);
+		}
+		myCanvas = new Canvas("TSP Graph", SIZE, SIZE, new Color(0));
+		myCanvas.setVisible(true);
+		drawNodes();
+		
+	}
 	public void drawNodes(){
 		myCanvas.setForegroundColor(Color.RED);
 		for(int i=0;i<numNodes;i++){

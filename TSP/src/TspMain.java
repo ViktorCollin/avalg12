@@ -12,12 +12,20 @@ import java.util.List;
 
 public class TspMain {
 	private static final boolean DEBUG = true;
+	public static final int RUNTIME = 1900;
+	public static final long breakTime = System.currentTimeMillis() + RUNTIME;
+	public static final boolean CW = true;
+	public static final boolean NN = false;
+	
+	
 	int[][] distanceMatrix;
-	TspNode[] nodes;
+	//TspNode[] nodes;
 	int numNodes;
 	Visulizer graph;
 	int cost;
 	boolean visulize = false;
+	float[] nodesX;
+	float[] nodesY;
 	private float maxX = Float.MIN_VALUE;
 	private float minX = Float.MAX_VALUE;
 	private float maxY = Float.MIN_VALUE;
@@ -31,58 +39,57 @@ public class TspMain {
 	}
 
 	public TspMain(boolean visulize) {
+		
 		this.visulize = visulize;
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					System.in));
 			numNodes = Integer.parseInt(in.readLine());
-			nodes = new TspNode[numNodes];
+		//	nodes = new TspNode[numNodes];
+			float[] nodesX = new float[numNodes];
+			float[] nodesY = new float[numNodes];
+			if(CW){
+				this.nodesX = nodesX;
+				this.nodesY = nodesY;
+			}
+			
 			distanceMatrix = new int[numNodes][numNodes];
 			for (int i = 0; i < numNodes; i++) {
 				String line = in.readLine();
 				String[] xy = line.split(" ");
-				nodes[i] = new TspNode(i, Float.parseFloat(xy[0]),
-						Float.parseFloat(xy[1]));
-				// if ClarkWright
-				minX = nodes[i].xPos < minX ? nodes[i].xPos : minX;
-				maxX = nodes[i].xPos > maxX ? nodes[i].xPos : maxX;
-				minY = nodes[i].yPos < minY ? nodes[i].yPos : minY;
-				maxY = nodes[i].yPos > maxY ? nodes[i].yPos : maxY;
-				if (DEBUG) {
-					System.out.println("minX=" + minX + ", maxX=" + maxX
-							+ ", minY=" + minY + ", maxY=" + maxY);
+				nodesX[i] = Float.parseFloat(xy[0]);
+				nodesY[i] = Float.parseFloat(xy[1]);
+				if (CW){
+					minX = nodesX[i] < minX ? nodesX[i] : minX;
+					maxX = nodesX[i] > maxX ? nodesX[i] : maxX;
+					minY = nodesY[i] < minY ? nodesY[i] : minY;
+					maxY = nodesY[i] > maxY ? nodesY[i] : maxY;
+//					if (DEBUG) {
+//						System.out.println("minX=" + minX + ", maxX=" + maxX
+//								+ ", minY=" + minY + ", maxY=" + maxY);
+//					}
 				}
 			}
+			
 			in.close();
 			for (int i = 0; i < numNodes; i++) {
 				for (int j = i + 1; j < numNodes; j++) {
-					distanceMatrix[i][j] = calcDistance(nodes[i], nodes[j]);
+					distanceMatrix[i][j] = calcDistance(nodesX[i], nodesY[i], nodesX[j], nodesY[j]);
 					distanceMatrix[j][i] = distanceMatrix[i][j];
 				}
 			}
 			if (visulize) {
-				graph = new Visulizer(nodes);
-				/*
-				 * test tar bara noderna i ordning
-				 * 
-				 * 
-				 * int[] order = new int[numNodes]; int cost = 0; for(int
-				 * i=0;i<numNodes;i++){ if(i == numNodes-1){ cost +=
-				 * distanceMatrix[0][numNodes-1]; }else{ cost +=
-				 * distanceMatrix[i][i+1]; } order[i] = i; }
-				 * graph.drawEdges(order, cost);
-				 */
+				graph = new Visulizer(nodesX, nodesY);
 
 			}
-			TspNode[] tour = clarkWright();
-
-			if(visulize) {
+			int[] tour = nerestNeighbor();
+			if (visulize)
 				graph.drawEdges(tour, cost);
-			}
 			
-			for(int i=0;i<tour.length;i++){
-				System.out.println(tour[i].nodeNumber);
-			}
+			if (!DEBUG)
+				for (int x : tour)
+					System.out.println(x);
+
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -90,12 +97,37 @@ public class TspMain {
 		}
 	}
 	
+	public int[] nerestNeighbor() {
+		int[] tour = new int[numNodes];
+		boolean[] used = new boolean[numNodes];
+		tour[0] = 0;
+		cost = 0;
+		used[0] = true;
+		
+		for (int i = 1; i < numNodes; i++) {
+			int best = -1;
+			
+			for (int j = 0; j < numNodes; j++) {
+				if (!used[j] && (best == -1 || distanceMatrix[tour[i-1]][j] < distanceMatrix[tour[i-1]][best])) {
+					best = j;
+				}
+			}
+			
+			tour[i] = best;
+			used[best] = true;
+			cost += distanceMatrix[i-1][i];
+		}
+		
+		return tour;
+	}
+	
 	public int findHubIndex() {
 		int hub = 0;
 		int maxDistance = 0;
-		TspNode middle = new TspNode(-1, (maxX-minX)/2, (maxY-minY)/2);
+		float middleX = (maxX-minX)/2;
+		float middleY = (maxY-minY)/2;
 		for (int i = 0; i < numNodes; i++) {
-			int newDist = calcDistance(middle, nodes[i]);
+			int newDist = calcDistance(middleX, middleY, nodesX[i], nodesY[i]);
 			if (maxDistance > newDist) {
 				hub = i;
 				maxDistance = newDist;
@@ -104,6 +136,7 @@ public class TspMain {
 		
 		return hub;
 	}
+	
 	
 
 	private boolean findGraphLoop(int x, int y, List<Savings> edges, int color) {
@@ -127,58 +160,42 @@ public class TspMain {
 		return x == y;
 	}
 	
-	public TspNode[] clarkWright(){
-		TspNode middle = new TspNode(-1, (maxX-minX)/2, (maxY-minY)/2);
-		if(DEBUG){
-			System.out.println("centerX="+middle.xPos+", centerY="+middle.yPos);
-		}
-		int centerDistance = calcDistance(middle, nodes[0]);
-		TspNode hub = nodes[0];
-		for (int i = 1; i < numNodes; i++) {
-			int newDist = calcDistance(middle, nodes[i]);
-			if (centerDistance > newDist) {
-				hub = nodes[i];
-				centerDistance = newDist;
-			}
-		}
-		if (DEBUG) {
-			System.out.println("centerNodeX=" + hub.xPos + ", centerNodeY="
-					+ hub.yPos);
-		}
-
+	public int[] clarkWright() {
+		int hub = findHubIndex();
+		
 		if (visulize) {
 			int[] order = new int[2 * numNodes - 2];
 			LinkedList<Integer> tmp = new LinkedList<Integer>();
 			for (int i = 0; i < numNodes; i++) {
-				if (i != hub.nodeNumber)
+				if (i != hub)
 					tmp.add(i);
 			}
 			int ith = 0;
 			while (!tmp.isEmpty()) {
 				order[ith] = tmp.poll();
-				order[ith + 1] = hub.nodeNumber;
+				order[ith + 1] = hub;
 				ith += 2;
 			}
 			graph.drawEdges(order, 0);
 		}
+		
 		if (DEBUG)
 			System.out.println("Savnings... begin");
+		
 		LinkedList<Savings> queue = new LinkedList<Savings>();
 		for (int i = 0; i < numNodes; i++) {
-			if (i == hub.nodeNumber)
+			if (i == hub)
 				continue;
 			for (int j = i + 1; j < numNodes; j++) {
-				if (j == hub.nodeNumber)
+				if (j == hub)
 					continue;
-				int saving = distanceMatrix[hub.nodeNumber][i]
-						+ distanceMatrix[hub.nodeNumber][j]
+				int saving = distanceMatrix[hub][i] + distanceMatrix[hub][j]
 						- distanceMatrix[j][i];
-				
 				Savings edge;
 				if (i > j)
-					edge = new Savings(nodes[j], nodes[i], saving);
+					edge = new Savings(j, i, saving);
 				else
-					edge = new Savings(nodes[i], nodes[j], saving);
+					edge = new Savings(i, j, saving);
 				
 				queue.add(edge);
 			}
@@ -186,6 +203,7 @@ public class TspMain {
 
 		Collections.sort(queue);
 		
+
 		if (DEBUG)
 			System.out.println("Savnings... DONE!");
 
@@ -196,8 +214,8 @@ public class TspMain {
 		while (edges.size() < numNodes - 2) {			
 			for (int i = queue.size() - 1; i >= 0; i--) {
 				Savings edge = queue.get(i);
-				TspNode from = edge.from;
-				TspNode to = edge.to;
+				TspNode from = nodes[edge.from];
+				TspNode to = nodes[edge.to];
 				
 				if (from.edges < 2 && to.edges < 2) {
 					
@@ -208,9 +226,7 @@ public class TspMain {
 						queue.remove(i);
 						break;
 					}
-					
-					System.out.println("Okej, vi vill ha en kant från " + from.nodeNumber + " till " + to.nodeNumber);
-					
+										
 					from.edges++;
 					to.edges++;
 					edges.add(edge);
@@ -226,7 +242,6 @@ public class TspMain {
 		}
 		
 
-		System.out.println(edges);
 		
 		// Add the hub
 		for (TspNode node : nodes) {
@@ -234,7 +249,7 @@ public class TspMain {
 				continue;
 			
 			if (node.edges == 1)
-				edges.add(new Savings(node, hub, 0));
+				edges.add(new Savings(node.nodeNumber, hub.nodeNumber, 0));
 		}
 		
 		
@@ -243,48 +258,30 @@ public class TspMain {
 		// Walk!
 		TspNode x = nodes[0]; // Start
 		result.add(x);
+		cost = 0;
 		
-		LOOP: // Dryg som fan. Gör om.
-		while (true) {
+		do {
 			for (int i = 0; i < edges.size(); i++) {
-				Savings edge = edges.get(i);
-				if (edge.from.nodeNumber == x.nodeNumber) {
-					x = edge.to;
-					
-					edges.remove(i);
+				Savings edge = edges.get(i);				
+				
+				if (edge.contains(x.nodeNumber)) {
+					TspNode next = nodes[edge.getVertex(x.nodeNumber)];
+//					cost += distanceMatrix[x.nodeNumber][next.nodeNumber];
+					x = next;
 					result.add(x);
-					if (x.nodeNumber == nodes[0].nodeNumber)
-						break LOOP;
-					else
-						break;
-				} else if (edge.to.nodeNumber == x.nodeNumber) {
-					x = edge.from;
-					
 					edges.remove(i);
-					result.add(x);
-					if (x.nodeNumber == nodes[0].nodeNumber)
-						break LOOP;
-					else
-						break;
+					break;
 				}
-			}			
-		}
+			}
+			
+		} while (x.nodeNumber != nodes[0].nodeNumber);
 		
-		System.out.println(result);
+		
+		//System.out.println(result);
+	
 		
 		
 		return result.toArray(new TspNode[] {});
-	}
-
-	public TspNode[] nearestNeighbor() {
-		TspNode[] result = new TspNode[numNodes];
-		HashSet<TspNode> tmp = new HashSet<TspNode>(Arrays.asList(nodes));
-		result[0] = nodes[0];
-		tmp.remove(nodes[0]);
-		for (int i = 0; i < result.length; i++) {
-
-		}
-		return result;
 	}
 
 	public TspNode[] twoOpt(TspNode[] tour) {
@@ -298,10 +295,20 @@ public class TspMain {
 		}
 		return tour;
 	}
+	
+	public void swap(int x, int y){
+		
+	}
 
 	public int calcDistance(TspNode a, TspNode b) {
 		float dx = Math.abs(a.xPos - b.xPos);
 		float dy = Math.abs(a.yPos - b.yPos);
+		return (int) Math.round(Math.hypot(dx, dy));
+	}
+	
+	public int calcDistance(float x1, float y1, float x2, float y2) {
+		float dx = Math.abs(x1 - x2);
+		float dy = Math.abs(y1 - y2);
 		return (int) Math.round(Math.hypot(dx, dy));
 	}
 }
