@@ -4,9 +4,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
-
 import java.util.List;
 
 
@@ -82,7 +80,15 @@ public class TspMain {
 				graph = new Visulizer(nodesX, nodesY);
 
 			}
-			int[] tour = clarkWright();
+			
+			// Step 1 - Initial tour
+			int[] tour = nerestNeighbor();
+			
+			// Step 2 - Optimizations
+			twoOpt(tour);
+			
+			System.out.println(Arrays.toString(tour));
+			
 			if (visulize)
 				graph.drawEdges(tour, cost);
 			
@@ -285,22 +291,75 @@ public class TspMain {
 		return result;
 	}
 
-	public TspNode[] twoOpt(TspNode[] tour) {
+	
+	public void twoOpt(int[] tour) {
 		boolean change = true;
+		
 		while (change) {
+			change = false;
+			X:
 			for (int i = 0; i < numNodes; i++) {
-				for (int j = 0; j < numNodes; j++) {
-
+				for (int j = i + 2; j < numNodes-2; j++) {
+					
+					int x1 = i;
+					int x2 = (i+1);
+					int y1 = j;
+					int y2 = (j + 1) ;
+					
+					if (x2 == numNodes || y2 == numNodes)
+						continue;
+					
+					
+					int x1_x2_cost = distanceMatrix[x1][x2];
+					int y1_y2_cost = distanceMatrix[y1][y2];
+					int old_cost = x1_x2_cost + y1_y2_cost;
+					
+					int x1_y1_cost = distanceMatrix[x1][y1];
+					int y2_x2_cost = distanceMatrix[y2][x2];
+					int new_cost = x1_y1_cost + y2_x2_cost;
+					
+					if (new_cost < old_cost) {
+						System.out.println(String.format("x1 = %d, x2 = %d, y1 = %d, y2 = %d", x1,x2,y1,y2));
+						System.out.println("New cost: " + new_cost);
+						System.out.println("Old cost: " + old_cost);
+						System.out.println("SWAP(" +i + ", " + j + ")");
+							
+						System.out.println("Before: " + calcCost(tour));
+						System.out.println(Arrays.toString(tour));
+						swap(tour, i, j);
+						
+						System.out.println("After: " + calcCost(tour));
+						System.out.println(Arrays.toString(tour));
+						System.out.println();
+						change = true;
+						break X;
+					}
 				}
 			}
 		}
-		return tour;
 	}
 	
-	public void swap(int x, int y){
+	public int calcCost(int[] tour) {
+		int cost = 0;
 		
+		for (int i = 0; i < numNodes - 1; i++) {
+			cost += distanceMatrix[tour[i]][tour[i+1]];
+		}
+		
+		cost += distanceMatrix[tour[numNodes-1]][tour[0]];
+		
+		return cost;
 	}
-
+	
+	public static void swap(int[] tour, int x, int y) {
+		int offset = x + 1;
+		for (int i = 0; i < (y-x)/2; i++) {
+			int tmp = tour[offset + i];
+			tour[offset + i] = tour[y - i];
+			tour[y - i] = tmp;
+		}		
+	}
+	
 	public int calcDistance(TspNode a, TspNode b) {
 		float dx = Math.abs(a.xPos - b.xPos);
 		float dy = Math.abs(a.yPos - b.yPos);
