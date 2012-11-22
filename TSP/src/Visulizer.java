@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Image;
 
 
 public class Visulizer{
@@ -12,6 +13,7 @@ public class Visulizer{
 	int numNodes;
 	Canvas myCanvas;
 	TspNode[] nodes;
+	Image nodeImage;
 
 	public Visulizer(TspNode[] nodes) {
 		this.nodes = nodes;
@@ -37,11 +39,11 @@ public class Visulizer{
 		for(int i=0;i<numNodes;i++){
 			myCanvas.fillCircle(Math.round(nodes[i].xPos-CIRCLEDIAMETER/2+PADDING), Math.round(nodes[i].yPos-CIRCLEDIAMETER/2+PADDING), CIRCLEDIAMETER);
 		}
+		nodeImage = myCanvas.getImage();
 	}
 	
 	public void drawEdges(int[] order, int cost){
-		myCanvas.erase();
-		drawNodes();
+		myCanvas.drawImage(nodeImage, 0, 0);
 		myCanvas.setForegroundColor(Color.CYAN);
 		for(int i=1;i<order.length;i++){
 			myCanvas.drawLine(Math.round(nodes[order[i-1]].xPos+PADDING), Math.round(nodes[order[i-1]].yPos+PADDING), Math.round(nodes[order[i]].xPos+PADDING), Math.round(nodes[order[i]].yPos+PADDING));
@@ -51,8 +53,7 @@ public class Visulizer{
 	}
 	
 	public void drawEdges(TspNode[] node, int cost){
-		myCanvas.erase();
-		drawNodes();
+		myCanvas.drawImage(nodeImage, 0, 0);
 		myCanvas.setForegroundColor(Color.CYAN);
 		for(int i=1;i<node.length;i++){
 			myCanvas.drawLine(Math.round(node[i-1].xPos+PADDING), Math.round(node[i-1].yPos+PADDING), Math.round(node[i].xPos+PADDING), Math.round(node[i].yPos+PADDING));

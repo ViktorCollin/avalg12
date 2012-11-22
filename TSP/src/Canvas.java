@@ -1,6 +1,16 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.geom.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 /**
  * Class Canvas - a class to allow for simple graphical 
@@ -82,6 +92,10 @@ public class Canvas
         }
         frame.setVisible(true);
     }
+    
+    public Image getImage(){
+    	return canvas.createImage(canvas.getSize().width, canvas.getSize().height);
+    }
 
     /**
      * Provide information on visibility of the Canvas.
@@ -119,8 +133,8 @@ public class Canvas
      */
     public void fillCircle(int xPos, int yPos, int diameter)
     {
-        Ellipse2D.Double circle = new Ellipse2D.Double(xPos, yPos, diameter, diameter);
-        fill(circle);
+        graphic.drawOval(xPos, yPos, diameter, diameter);
+        canvas.repaint();
     }
 
     /**
