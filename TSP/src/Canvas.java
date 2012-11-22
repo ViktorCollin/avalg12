@@ -93,8 +93,9 @@ public class Canvas
         frame.setVisible(true);
     }
     
-    public Image getImage(){
-    	return canvas.createImage(canvas.getSize().width, canvas.getSize().height);
+    public BufferedImage getImage(){
+    	return new BufferedImage(canvas.getSize().width, canvas.getSize().height, BufferedImage.TYPE_INT_RGB);
+    	//return canvas.createImage(canvas.getSize().width, canvas.getSize().height);
     }
 
     /**
@@ -133,8 +134,8 @@ public class Canvas
      */
     public void fillCircle(int xPos, int yPos, int diameter)
     {
-        graphic.drawOval(xPos, yPos, diameter, diameter);
-        canvas.repaint();
+    	Ellipse2D.Double circle = new Ellipse2D.Double(xPos, yPos, diameter, diameter);
+		fill(circle);
     }
 
     /**

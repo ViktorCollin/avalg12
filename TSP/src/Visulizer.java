@@ -21,7 +21,7 @@ public class Visulizer{
 		myCanvas = new Canvas("TSP Graph", SIZE, SIZE, new Color(0));
 		myCanvas.setVisible(true);
 		drawNodes();
-		
+
 	}
 	public Visulizer(float[] nodesX, float[] nodesY) {
 		numNodes = nodesX.length;
@@ -32,16 +32,23 @@ public class Visulizer{
 		myCanvas = new Canvas("TSP Graph", SIZE, SIZE, new Color(0));
 		myCanvas.setVisible(true);
 		drawNodes();
+		try {
+			wait(100);
+		} catch (Exception e) {
+			
+		}
+		//nodeImage = myCanvas.getImage();
 		
+		
+
 	}
 	public void drawNodes(){
 		myCanvas.setForegroundColor(Color.RED);
 		for(int i=0;i<numNodes;i++){
 			myCanvas.fillCircle(Math.round(nodes[i].xPos-CIRCLEDIAMETER/2+PADDING), Math.round(nodes[i].yPos-CIRCLEDIAMETER/2+PADDING), CIRCLEDIAMETER);
 		}
-		nodeImage = myCanvas.getImage();
 	}
-	
+
 	public void drawEdges(int[] order, int cost){
 		myCanvas.drawImage(nodeImage, 0, 0);
 		myCanvas.setForegroundColor(Color.CYAN);
@@ -51,7 +58,7 @@ public class Visulizer{
 		myCanvas.drawLine(Math.round(nodes[order[0]].xPos+PADDING), Math.round(nodes[order[0]].yPos+PADDING), Math.round(nodes[order[order.length-1]].xPos+PADDING), Math.round(nodes[order[order.length-1]].yPos+PADDING));
 		myCanvas.drawString("Total cost: "+cost, 10, SIZE-10);
 	}
-	
+
 	public void drawEdges(TspNode[] node, int cost){
 		myCanvas.drawImage(nodeImage, 0, 0);
 		myCanvas.setForegroundColor(Color.CYAN);

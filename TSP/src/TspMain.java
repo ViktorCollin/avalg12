@@ -2,11 +2,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
-
 import java.util.List;
 
 
@@ -14,8 +11,8 @@ public class TspMain {
 	private static final boolean DEBUG = true;
 	public static final int RUNTIME = 1900;
 	public static final long breakTime = System.currentTimeMillis() + RUNTIME;
-	public static final boolean CW = true;
-	public static final boolean NN = false;
+	public static final boolean CW = false;
+	public static final boolean NN = true;
 	
 	
 	int[][] distanceMatrix;
@@ -82,7 +79,13 @@ public class TspMain {
 				graph = new Visulizer(nodesX, nodesY);
 
 			}
-			int[] tour = clarkWright();
+			int[] tour;
+			if(CW){
+			 tour = clarkWright();
+			}
+			if(NN){
+				tour = nerestNeighbor();
+			}
 			if (visulize)
 				graph.drawEdges(tour, cost);
 			
