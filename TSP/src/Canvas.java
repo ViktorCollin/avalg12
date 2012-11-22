@@ -93,8 +93,10 @@ public class Canvas
         frame.setVisible(true);
     }
     
-    public BufferedImage getImage(){
-    	return new BufferedImage(canvas.getSize().width, canvas.getSize().height, BufferedImage.TYPE_INT_RGB);
+    public Image getImage(){
+    	BufferedImage bi = new BufferedImage(canvas.getSize().width, canvas.getSize().height, BufferedImage.TYPE_INT_RGB);
+     	canvas.paint(bi.getGraphics());
+    	return bi;
     	//return canvas.createImage(canvas.getSize().width, canvas.getSize().height);
     }
 
@@ -367,7 +369,12 @@ public class Canvas
      */
     private class CanvasPane extends JPanel
     {
-        public void paint(Graphics g)
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public void paint(Graphics g)
         {
             g.drawImage(canvasImage, 0, 0, null);
         }

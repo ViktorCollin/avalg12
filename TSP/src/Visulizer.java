@@ -8,7 +8,7 @@ public class Visulizer{
 	 */	 
 	private static final int PADDING = 30;
 	private static final int SIZE = Generator.MAX+(2*PADDING);
-	private static final int CIRCLEDIAMETER = 10;
+	private static final int CIRCLEDIAMETER = 7;
 
 	int numNodes;
 	Canvas myCanvas;
@@ -32,21 +32,14 @@ public class Visulizer{
 		myCanvas = new Canvas("TSP Graph", SIZE, SIZE, new Color(0));
 		myCanvas.setVisible(true);
 		drawNodes();
-		try {
-			wait(100);
-		} catch (Exception e) {
-			
-		}
-		//nodeImage = myCanvas.getImage();
-		
-		
-
 	}
+	
 	public void drawNodes(){
 		myCanvas.setForegroundColor(Color.RED);
 		for(int i=0;i<numNodes;i++){
 			myCanvas.fillCircle(Math.round(nodes[i].xPos-CIRCLEDIAMETER/2+PADDING), Math.round(nodes[i].yPos-CIRCLEDIAMETER/2+PADDING), CIRCLEDIAMETER);
 		}
+		nodeImage = myCanvas.getImage();
 	}
 
 	public void drawEdges(int[] order, int cost){

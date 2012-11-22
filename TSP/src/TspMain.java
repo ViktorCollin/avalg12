@@ -9,7 +9,7 @@ import java.util.List;
 
 
 public class TspMain {
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	public static final int RUNTIME = 1900;
 	public static final long breakTime = System.currentTimeMillis() + RUNTIME;
 	public static final boolean CW = false;
@@ -17,7 +17,6 @@ public class TspMain {
 	
 	
 	int[][] distanceMatrix;
-	//TspNode[] nodes;
 	int numNodes;
 	Visulizer graph;
 	int cost;
@@ -33,15 +32,16 @@ public class TspMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new TspMain(args.length != 0);
+		boolean visulize = args.length != 0;
+		TspMain main = new TspMain(visulize);
+		main.run();
+		
 	}
 
 	public TspMain(boolean visulize) {
-		
 		this.visulize = visulize;
 		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					System.in));
+			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			numNodes = Integer.parseInt(in.readLine());
 		//	nodes = new TspNode[numNodes];
 			float[] nodesX = new float[numNodes];
@@ -62,10 +62,6 @@ public class TspMain {
 					maxX = nodesX[i] > maxX ? nodesX[i] : maxX;
 					minY = nodesY[i] < minY ? nodesY[i] : minY;
 					maxY = nodesY[i] > maxY ? nodesY[i] : maxY;
-//					if (DEBUG) {
-//						System.out.println("minX=" + minX + ", maxX=" + maxX
-//								+ ", minY=" + minY + ", maxY=" + maxY);
-//					}
 				}
 			}
 			
@@ -80,32 +76,32 @@ public class TspMain {
 				graph = new Visulizer(nodesX, nodesY);
 
 			}
-			//Step 1 - Initial tour
-			int[] tour;
-			if(CW){
-			 tour = clarkWright();
-			}
-			if(NN){
-				tour = nerestNeighbor();
-			}
-			
-			// Step 2 - Optimizations
-			twoOpt(tour);
-			
-			System.out.println(Arrays.toString(tour));
-			
-			if (visulize)
-				graph.drawEdges(tour, cost);
-			
-			if (!DEBUG)
-				for (int x : tour)
-					System.out.println(x);
-
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	public void run(){
+		//Step 1 - Initial tour
+		int[] tour = initGuess();
+		if (visulize)
+			graph.drawEdges(tour, cost);
+		// Step 2 - Optimizations
+		twoOpt(tour);
+		System.out.println(Arrays.toString(tour));
+		
+		// Step 3 - Print
+		if (!DEBUG)
+			for (int x : tour)
+				System.out.println(x);
+	}
+	
+	public int[] initGuess(){
+		if(CW) return clarkWright();
+		if(NN) return nerestNeighbor();
+		return null;
+		
 	}
 	
 	public int[] nerestNeighbor() {
@@ -148,8 +144,6 @@ public class TspMain {
 		return hub;
 	}
 	
-	
-
 	private boolean findGraphLoop(int x, int y, List<Savings> edges, int color) {
 		
 		while (x != -1 && x != y) {
@@ -324,6 +318,7 @@ public class TspMain {
 					int new_cost = x1_y1_cost + y2_x2_cost;
 					
 					if (new_cost < old_cost) {
+						if(DEBUG){
 						System.out.println(String.format("x1 = %d, x2 = %d, y1 = %d, y2 = %d", x1,x2,y1,y2));
 						System.out.println("New cost: " + new_cost);
 						System.out.println("Old cost: " + old_cost);
@@ -331,11 +326,14 @@ public class TspMain {
 							
 						System.out.println("Before: " + calcCost(tour));
 						System.out.println(Arrays.toString(tour));
+						}
 						swap(tour, i, j);
-						
+						if(DEBUG){
 						System.out.println("After: " + calcCost(tour));
 						System.out.println(Arrays.toString(tour));
 						System.out.println();
+						}
+						graph.drawEdges(tour, new_cost);
 						change = true;
 						break X;
 					}
