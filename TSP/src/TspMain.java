@@ -12,8 +12,8 @@ public class TspMain {
 	private static final boolean DEBUG = false;
 	public static final int RUNTIME = 1900;
 	public static final long breakTime = System.currentTimeMillis() + RUNTIME;
-	public static final boolean CW = false;
-	public static final boolean NN = true;
+	public static final boolean CW = true;
+	public static final boolean NN = false;
 	
 	
 	int[][] distanceMatrix;

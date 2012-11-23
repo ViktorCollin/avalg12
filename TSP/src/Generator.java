@@ -12,7 +12,7 @@ public class Generator {
 		}else if(args.length == 2){
 			new Generator(args);
 		}else{
-			System.out.println("java Generator <numNodes> <algoritm>(random, dense, sparse)");
+			System.out.println("java Generator <numNodes> <algoritm>(random, dense, circle)");
 		}
 
 	}
@@ -25,15 +25,13 @@ public class Generator {
 			random(numNodes);
 		} else if(args[1].equalsIgnoreCase("dense")){
 			dense(numNodes);
-		} else if(args[1].equalsIgnoreCase("sparse")){
-			sparse(numNodes);
+		} else if(args[1].equalsIgnoreCase("circle")){
+			circle(numNodes);
 		} else {
-			System.out.println("java Generator <numNodes> <algoritm>(random, dense, sparse)");
+			System.out.println("java Generator <numNodes> <algoritm>(random, dense, circle)");
 		}
 	}
 	
-	
-
 
 	public void random(int numNodes){
 		Random rnd = new Random();
@@ -57,8 +55,16 @@ public class Generator {
 		
 	}
 	
-	public void sparse(int numNodes) {
-		// TODO Auto-generated method stub
+	public void circle(int numNodes) {
+		int r = MAX/2;
+		double x, y, t, dt = (2*Math.PI)/numNodes;
+		for(int i=0;i<numNodes;i++){
+			t = i*dt;
+			x = r + r*Math.cos(t);
+			y = r + r*Math.sin(t);
+			System.out.println(x+" "+y);
+		}
+		
 		
 	}
 }
