@@ -82,8 +82,11 @@ public class TspMain {
 	public void run(){
 		//Step 1 - Initial tour
 		int[] tour = initGuess();
-		if (visulize)
-			graph.drawEdges(tour);
+		if (visulize){
+			if(NN) graph.drawEdges(tour, "Initial guess: NN");
+			if(CW) graph.drawEdges(tour, "Initial guess: CW");
+		}
+			
 		// Step 2 - Optimizations
 		twoOpt(tour);
 		System.out.println(Arrays.toString(tour));
@@ -178,7 +181,7 @@ public class TspMain {
 				order[ith + 1] = hub;
 				ith += 2;
 			}
-			graph.drawEdges(order, 0);
+			graph.drawEdges(order, "Hub of CW");
 		}
 		
 		if (DEBUG)

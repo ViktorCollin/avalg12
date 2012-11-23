@@ -54,20 +54,27 @@ public class newVisulizer extends Canvas {
 		strategy.show();
 	}
 	
-	public void drawEdges(int[] order, int cost){
+	public void drawEdges(int[] order, int cost, String mesage){
 		drawNodes();
 		Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
 		g.setColor(Color.cyan);
+		g.drawString("Total cost: "+cost, 10, SIZE-10);
+		g.drawString(mesage, 10, 20);
 		for(int i=1;i<order.length;i++){
 			g.drawLine(nodesX[i-1], nodesY[i-1], nodesX[i], nodesY[i]);
 		}
+		g.drawLine(nodesX[0], nodesY[0], nodesX[nodesX.length-1], nodesY[nodesY.length-1]);
 		g.dispose();
 		strategy.show();
 	}
 	
 	public void drawEdges(int[] order){
 		int cost = sanityCheck(order);
-		drawEdges(order, cost);
+		drawEdges(order, cost, "");
+	}
+	public void drawEdges(int[] order, String mesage){
+		int cost = sanityCheck(order);
+		drawEdges(order, cost, mesage);
 	}
 	
 	public int sanityCheck(int[] order){
@@ -78,6 +85,7 @@ public class newVisulizer extends Canvas {
 			visited[order[i]] = true;
 			cost += distanceMatrix[i-1][i];
 		}
+		cost += distanceMatrix[0][nodesX.length-1];
 		for(int i=0;i<visited.length;i++){
 			if(!visited[i]) System.err.println("NODE: "+i+" NOT VISITED!!!");
 		}
