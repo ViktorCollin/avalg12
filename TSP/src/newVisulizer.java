@@ -40,6 +40,7 @@ public class newVisulizer extends Canvas {
 		createBufferStrategy(2);
 		strategy = getBufferStrategy();
 		drawNodes();
+		strategy.show();
 	}
 	
 	public void drawNodes(){
@@ -51,7 +52,6 @@ public class newVisulizer extends Canvas {
 			g.fillRoundRect(nodesX[i]-(NODESIZE/2), nodesY[i]-(NODESIZE/2), NODESIZE, NODESIZE, NODESIZE, NODESIZE);
 		}
 		g.dispose();
-		strategy.show();
 	}
 	
 	public void drawEdges(int[] order, int cost, String mesage){
@@ -61,9 +61,9 @@ public class newVisulizer extends Canvas {
 		g.drawString("Total cost: "+cost, 10, SIZE-10);
 		g.drawString(mesage, 10, 20);
 		for(int i=1;i<order.length;i++){
-			g.drawLine(nodesX[i-1], nodesY[i-1], nodesX[i], nodesY[i]);
+			g.drawLine(nodesX[order[i-1]], nodesY[order[i-1]], nodesX[order[i]], nodesY[order[i]]);
 		}
-		g.drawLine(nodesX[0], nodesY[0], nodesX[nodesX.length-1], nodesY[nodesY.length-1]);
+		g.drawLine(nodesX[order[0]], nodesY[order[0]], nodesX[order[order.length-1]], nodesY[order[order.length-1]]);
 		g.dispose();
 		strategy.show();
 	}
@@ -83,9 +83,9 @@ public class newVisulizer extends Canvas {
 		visited[order[0]] = true;
 		for(int i=1;i<order.length;i++){
 			visited[order[i]] = true;
-			cost += distanceMatrix[i-1][i];
+			cost += distanceMatrix[order[i-1]][order[i]];
 		}
-		cost += distanceMatrix[0][nodesX.length-1];
+		cost += distanceMatrix[order[0]][order[order.length-1]];
 		for(int i=0;i<visited.length;i++){
 			if(!visited[i]) System.err.println("NODE: "+i+" NOT VISITED!!!");
 		}
