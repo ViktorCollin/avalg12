@@ -45,21 +45,23 @@ public class Visulizer{
 	public void drawEdges(int[] order, int cost){
 		myCanvas.drawImage(nodeImage, 0, 0);
 		myCanvas.setForegroundColor(Color.CYAN);
+		myCanvas.drawString("Total cost: "+cost, 10, SIZE-10);
 		for(int i=1;i<order.length;i++){
 			myCanvas.drawLine(Math.round(nodes[order[i-1]].xPos+PADDING), Math.round(nodes[order[i-1]].yPos+PADDING), Math.round(nodes[order[i]].xPos+PADDING), Math.round(nodes[order[i]].yPos+PADDING));
 		}
 		myCanvas.drawLine(Math.round(nodes[order[0]].xPos+PADDING), Math.round(nodes[order[0]].yPos+PADDING), Math.round(nodes[order[order.length-1]].xPos+PADDING), Math.round(nodes[order[order.length-1]].yPos+PADDING));
-		myCanvas.drawString("Total cost: "+cost, 10, SIZE-10);
+		
 	}
 
 	public void drawEdges(TspNode[] node, int cost){
 		myCanvas.drawImage(nodeImage, 0, 0);
 		myCanvas.setForegroundColor(Color.CYAN);
+		myCanvas.drawString("Total cost: "+cost, 10, SIZE-10);
 		for(int i=1;i<node.length;i++){
 			myCanvas.drawLine(Math.round(node[i-1].xPos+PADDING), Math.round(node[i-1].yPos+PADDING), Math.round(node[i].xPos+PADDING), Math.round(node[i].yPos+PADDING));
 		}
 		myCanvas.drawLine(Math.round(node[0].xPos+PADDING), Math.round(node[0].yPos+PADDING), Math.round(node[node.length-1].xPos+PADDING), Math.round(node[node.length-1].yPos+PADDING));
-		myCanvas.drawString("Total cost: "+cost, 10, SIZE-10);
+		
 	}
 
 }

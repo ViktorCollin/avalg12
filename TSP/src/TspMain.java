@@ -18,7 +18,7 @@ public class TspMain {
 	
 	int[][] distanceMatrix;
 	int numNodes;
-	Visulizer graph;
+	newVisulizer graph;
 	int cost;
 	boolean visulize = false;
 	float[] nodesX;
@@ -32,9 +32,7 @@ public class TspMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		boolean visulize = args.length != 0;
-		TspMain main = new TspMain(visulize);
-		main.run();
+		new TspMain(args.length != 0).run();
 		
 	}
 
@@ -43,7 +41,6 @@ public class TspMain {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			numNodes = Integer.parseInt(in.readLine());
-		//	nodes = new TspNode[numNodes];
 			float[] nodesX = new float[numNodes];
 			float[] nodesY = new float[numNodes];
 			if(CW){
@@ -73,7 +70,7 @@ public class TspMain {
 				}
 			}
 			if (visulize) {
-				graph = new Visulizer(nodesX, nodesY);
+				graph = new newVisulizer(nodesX, nodesY, distanceMatrix);
 
 			}
 		} catch (NumberFormatException e) {
@@ -86,7 +83,7 @@ public class TspMain {
 		//Step 1 - Initial tour
 		int[] tour = initGuess();
 		if (visulize)
-			graph.drawEdges(tour, cost);
+			graph.drawEdges(tour);
 		// Step 2 - Optimizations
 		twoOpt(tour);
 		System.out.println(Arrays.toString(tour));
@@ -333,7 +330,7 @@ public class TspMain {
 						System.out.println(Arrays.toString(tour));
 						System.out.println();
 						}
-						graph.drawEdges(tour, new_cost);
+						//graph.drawEdges(tour, new_cost);
 						change = true;
 						break X;
 					}

@@ -1,0 +1,19 @@
+Att googla på om TSP
+====================
+
+Startgissningar:
+	* slump
+	* girig, närmsta granne
+	* girig, lägg till kortaste kant
+	* Clarke-Wright
+	* Christofides
+		* förenklad variant (2-approx)
+	* förenklad avancerad variant (matchning, men inte minimal)
+
+Förbättringar:
+	* 2-opt
+	* 3-opt
+	* Lin-Kernighan k-opt (brukar vinna tävlingar)
+	* simulated annealing (guld att hämta)
+	* genetiska algoritmer (låter som att det tar tid...)
+	* neurala nätverk (snilsson har ingen aning hur man gör för TSP)
