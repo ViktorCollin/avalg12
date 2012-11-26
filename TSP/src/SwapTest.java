@@ -3,20 +3,29 @@ import java.util.Arrays;
 
 public class SwapTest {
 
-	public static void swap(int[] tour, int x, int y) {
-		int tmp = 0;
-		if(x > y){
-			tmp = x;
-			x = y;
-			y = tmp;
-		}
-		while(x<y){
-			tmp = tour[x];
-			tour[x] = tour[y];
-			tour[y] = tmp;
-			x++;
+	public static void swap(short[] tour, short x, short y) {
+		int l = Math.abs(x-y);
+		short tmp = tour[x];
+		tour[x] = tour[y];
+		tour[y] = tmp;
+		
+		if(l > tour.length/2 && y > x){
+			System.out.println(Arrays.toString(tour));
+			y++;
+			x--;
+			if(x >= y) return;
+			if(y >= tour.length) y = 0;
+			if(x < 0) x = (short)(tour.length-1);
+			swap(tour, x, y);
+		} else {
 			y--;
+			x++;
+			if(y <= x) return;
+			if(x >= tour.length) x = 0;
+			if(y < 0) y = (short)(tour.length-1);
+			swap(tour, x, y);
 		}
+		
 		//TODO go the other way if x-y > tour.length/2 
 	}
 	/**
@@ -24,12 +33,12 @@ public class SwapTest {
 	 */
 	public static void main(String[] args){
 		String[] v = args[0].split(",");
-		int[] tour = new int[v.length];
+		short[] tour = new short[v.length];
 		for(int i=0;i<tour.length;i++){
-			tour[i] = Integer.parseInt(v[i]);
+			tour[i] = Short.parseShort(v[i]);
 		}
 		System.out.println(Arrays.toString(tour));
-		swap(tour, Integer.parseInt(args[1]),Integer.parseInt(args[2]));
+		swap(tour, Short.parseShort(args[1]),Short.parseShort(args[2]));
 		System.out.println(Arrays.toString(tour));
 	}
 

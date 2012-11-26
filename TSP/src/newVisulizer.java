@@ -54,38 +54,38 @@ public class newVisulizer extends Canvas {
 		g.dispose();
 	}
 	
-	public void drawEdges(int[] order, int cost, String mesage){
+	public void drawEdges(short[] tour, int cost, String mesage){
 		drawNodes();
 		Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
 		g.setColor(Color.cyan);
 		g.drawString("Total cost: "+cost, 10, SIZE-10);
 		g.drawString(mesage, 10, 20);
-		for(int i=1;i<order.length;i++){
-			g.drawLine(nodesX[order[i-1]], nodesY[order[i-1]], nodesX[order[i]], nodesY[order[i]]);
+		for(int i=1;i<tour.length;i++){
+			g.drawLine(nodesX[tour[i-1]], nodesY[tour[i-1]], nodesX[tour[i]], nodesY[tour[i]]);
 		}
-		g.drawLine(nodesX[order[0]], nodesY[order[0]], nodesX[order[order.length-1]], nodesY[order[order.length-1]]);
+		g.drawLine(nodesX[tour[0]], nodesY[tour[0]], nodesX[tour[tour.length-1]], nodesY[tour[tour.length-1]]);
 		g.dispose();
 		strategy.show();
 	}
 	
-	public void drawEdges(int[] order){
-		int cost = sanityCheck(order);
-		drawEdges(order, cost, "");
+	public void drawEdges(short[] tour){
+		int cost = sanityCheck(tour);
+		drawEdges(tour, cost, "");
 	}
-	public void drawEdges(int[] order, String mesage){
-		int cost = sanityCheck(order);
-		drawEdges(order, cost, mesage);
+	public void drawEdges(short[] tour, String mesage){
+		int cost = sanityCheck(tour);
+		drawEdges(tour, cost, mesage);
 	}
 	
-	public int sanityCheck(int[] order){
+	public int sanityCheck(short[] tour){
 		boolean[] visited = new boolean[nodesX.length];
 		int cost = 0;
-		visited[order[0]] = true;
-		for(int i=1;i<order.length;i++){
-			visited[order[i]] = true;
-			cost += distanceMatrix[order[i-1]][order[i]];
+		visited[tour[0]] = true;
+		for(int i=1;i<tour.length;i++){
+			visited[tour[i]] = true;
+			cost += distanceMatrix[tour[i-1]][tour[i]];
 		}
-		cost += distanceMatrix[order[0]][order[order.length-1]];
+		cost += distanceMatrix[tour[0]][tour[tour.length-1]];
 		for(int i=0;i<visited.length;i++){
 			if(!visited[i]) System.err.println("NODE: "+i+" NOT VISITED!!!");
 		}
