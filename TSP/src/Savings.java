@@ -1,21 +1,21 @@
 
 public class Savings implements Comparable<Savings> {
-	short from;
-	short to; 
+	int from;
+	int to; 
 	int saving;
 	int color;
 
-	public Savings(short from, short to, int saving) {
+	public Savings(int from, int to, int saving) {
 		this.from = from;
 		this.to = to;
 		this.saving = saving;
 	}
 	
-	public boolean contains(short node) {
+	public boolean contains(int node) {
 		return from == node || to == node;
 	}
 	
-	public short getVertex(short node) {
+	public int getVertex(int node) {
 		if (from == node)
 			return to;
 		else if (to == node)

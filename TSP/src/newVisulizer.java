@@ -54,7 +54,7 @@ public class newVisulizer extends Canvas {
 		g.dispose();
 	}
 	
-	public void drawEdges(short[] tour, int cost, String mesage){
+	public void drawEdges(int[] tour, int cost, String mesage){
 		drawNodes();
 		Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
 		g.setColor(Color.cyan);
@@ -68,16 +68,16 @@ public class newVisulizer extends Canvas {
 		strategy.show();
 	}
 	
-	public void drawEdges(short[] tour){
+	public void drawEdges(int[] tour){
 		int cost = sanityCheck(tour);
 		drawEdges(tour, cost, "");
 	}
-	public void drawEdges(short[] tour, String mesage){
+	public void drawEdges(int[] tour, String mesage){
 		int cost = sanityCheck(tour);
 		drawEdges(tour, cost, mesage);
 	}
 	
-	public int sanityCheck(short[] tour){
+	public int sanityCheck(int[] tour){
 		boolean[] visited = new boolean[nodesX.length];
 		int cost = 0;
 		visited[tour[0]] = true;

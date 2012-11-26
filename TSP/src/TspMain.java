@@ -8,11 +8,12 @@ import java.util.List;
 
 
 public class TspMain {
-	private static final boolean DEBUG = false;
-	public static final int RUNTIME = 1740;
+	private static boolean DEBUG = false;
+	public static final int RUNTIME = 1990;
 	public static final long breakTime = System.currentTimeMillis() + RUNTIME;
 	public static final boolean CW = false;
 	public static final boolean NN = true;
+	private static final int NUMBER_OF_TRIES = 3;
 	
 	
 	int[][] distanceMatrix;
@@ -32,16 +33,20 @@ public class TspMain {
 	 */
 	public static void main(String[] args) {
 		new TspMain(args.length != 0).run();
-		
 	}
 
 	public TspMain(boolean visulize) {
 		this.visulize = visulize;
+		
+		if (visulize)
+			DEBUG = true;
+		
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			numNodes = Integer.parseInt(in.readLine());
 			float[] nodesX = new float[numNodes];
 			float[] nodesY = new float[numNodes];
+			
 			if(CW){
 				this.nodesX = nodesX;
 				this.nodesY = nodesY;
@@ -50,9 +55,10 @@ public class TspMain {
 			distanceMatrix = new int[numNodes][numNodes];
 			for (int i = 0; i < numNodes; i++) {
 				String line = in.readLine();
-				String[] xy = line.split(" ");
-				nodesX[i] = Float.parseFloat(xy[0]);
-				nodesY[i] = Float.parseFloat(xy[1]);
+				int index = line.indexOf(" ");
+				nodesX[i] = Float.parseFloat(line.substring(0, index));
+				nodesY[i] = Float.parseFloat(line.substring(index + 1));
+				
 				if (CW){
 					minX = nodesX[i] < minX ? nodesX[i] : minX;
 					maxX = nodesX[i] > maxX ? nodesX[i] : maxX;
@@ -63,7 +69,7 @@ public class TspMain {
 			
 			in.close();
 			for (int i = 0; i < numNodes; i++) {
-				for (int j = i + 1; j < numNodes; j++) {
+				for (int j = i + 1; j < numNodes; j++) {					
 					distanceMatrix[i][j] = calcDistance(nodesX[i], nodesY[i], nodesX[j], nodesY[j]);
 					distanceMatrix[j][i] = distanceMatrix[i][j];
 				}
@@ -80,55 +86,93 @@ public class TspMain {
 	}
 	
 	public void run(){
-		//Step 1 - Initial tour
-		short[] tour = initGuess();
-		if (visulize){
-			if(NN) graph.drawEdges(tour, "Initial guess: NN");
-			if(CW) graph.drawEdges(tour, "Initial guess: CW");
-		}
-			
-		// Step 2 - Optimizations
-		twoOpt(tour);
+		int[] bestTour = null;
+		int bestCost = Integer.MAX_VALUE;
 		
-		// Step 3 - Print
+		for (int n = 0; n < NUMBER_OF_TRIES; n++) {
+			//Step 1 - Initial tour
+			int[] tour = initGuess();
+			if (visulize){
+				if(NN) graph.drawEdges(tour, "Initial guess: NN");
+				if(CW) graph.drawEdges(tour, "Initial guess: CW");
+			}
+				
+			// Step 2 - Optimizations
+			twoOpt(tour);
+			
+			// Step 3 - Better than before?
+			int cost = calculateCost(tour);
+			if (DEBUG) {
+				System.out.println("Cost: " + cost);
+				
+			}
+			
+			if (cost < bestCost) {
+				bestTour = tour;
+				bestCost = cost;
+				
+				if (DEBUG) {
+					System.out.println("Better!");
+				}
+				
+			}	
+		}
+		
+		// Step 4 - Print the best tour
 		if (!DEBUG)
-			for (short x : tour)
+			for (int x : bestTour)
 				System.out.println(x);
 	}
 	
-	public short[] initGuess(){
+	public int[] initGuess(){
 		if(CW) return clarkWright();
 		if(NN) return nerestNeighbor();
 		return null;
 		
 	}
 	
-	public short[] nerestNeighbor() {
-		short[] tour = new short[numNodes];
+	public int[] nerestNeighbor() {
+		int[] tour = new int[numNodes];
 		boolean[] used = new boolean[numNodes];
-		tour[0] = 0;
-		used[0] = true;
+		int start = 0; //new Random().nextInt(numNodes);
 		
-		for (int i = 1; i < numNodes; i++) {
-			short best = -1;
-			for (short j = 0; j < numNodes; j++) {
-				if (!used[j] && (best == -1 || distanceMatrix[tour[i-1]][j] < distanceMatrix[tour[i-1]][best])) {
+		if (DEBUG)
+			System.out.println("Start node: " + start);
+		
+		tour[0] = start;
+		used[start] = true;
+		
+		int i = start;
+		
+		for (int k = 1; k < numNodes; k++) {
+			int best = -1;
+			int bestDistance = -1;
+			
+			for (int j = 0; j < numNodes; j++) {
+				if (i == j)
+					continue;
+				
+				if (!used[j] && (best == -1 || distanceMatrix[i][j] < bestDistance)) {
 					best = j;
+					bestDistance = distanceMatrix[i][j];
 				}
 			}
-			tour[i] = best;
+			
+			tour[k] = best;
 			used[best] = true;
+			i = best;
 		}
+		
 		return tour;
 	}
 		
-	public short[] clarkWright() {
-		short hub = findHubIndex();
+	public int[] clarkWright() {
+		int hub = findHubIndex();
 		
 		if (visulize) {
-			short[] tour = new short[2 * numNodes - 2];
-			LinkedList<Short> tmp = new LinkedList<Short>();
-			for (short i = 0; i < numNodes; i++) {
+			int[] tour = new int[2 * numNodes - 2];
+			LinkedList<Integer> tmp = new LinkedList<Integer>();
+			for (int i = 0; i < numNodes; i++) {
 				if (i != hub)
 					tmp.add(i);
 			}
@@ -179,10 +223,10 @@ public class TspMain {
 		while (edges.size() < numNodes - 2) {			
 			for (int i = queue.size() - 1; i >= 0; i--) {
 				Savings edge = queue.get(i);
-				short from = edge.from;
-				short to = edge.to;
+				int from = edge.from;
+				int to = edge.to;
 				
-				if (edgeCount[from] < (short) 2 && edgeCount[to] < (short) 2) {
+				if (edgeCount[from] < 2 && edgeCount[to] < 2) {
 					
 					if (
 						findGraphLoop(from, to, edges, ++color) ||
@@ -218,11 +262,11 @@ public class TspMain {
 		}
 		
 		
-		short[] result = new short[numNodes + 1];
+		int[] result = new int[numNodes + 1];
 		int j = 0;
 
 		// Walk!
-		short x = 0; // Start
+		int x = 0; // Start
 		result[j] = x;
 		j++;
 		
@@ -231,7 +275,7 @@ public class TspMain {
 				Savings edge = edges.get(i);				
 				
 				if (edge.contains(x)) {
-					short next = edge.getVertex(x);
+					int next = edge.getVertex(x);
 					x = next;
 					result[j] = x;
 					j++;
@@ -262,7 +306,7 @@ public class TspMain {
 		return hub;
 	}
 	
-	private boolean findGraphLoop(short x, short y, List<Savings> edges, int color) {
+	private boolean findGraphLoop(int x, int y, List<Savings> edges, int color) {
 		
 		while (x != -1 && x != y) {
 			boolean progress = false;
@@ -283,50 +327,76 @@ public class TspMain {
 		return x == y;
 	}
 
-	public void twoOpt(short[] tour) {	
+	public void twoOpt(int[] tour) {
 		int numTwoOpts = 0;
-		while (makeOneTwoOpt(tour) && (System.currentTimeMillis() < breakTime || visulize)) {
-			if(visulize){
-				numTwoOpts++;
-				graph.drawEdges(tour, "Number of 2-Opts: "+numTwoOpts);
+		int start = 0;
+
+		for (int i = 0; i < 7; i++) {
+			start = 0;
+
+			while (start >= 0
+					&& (System.currentTimeMillis() < breakTime || visulize)) {
+				start = makeOneTwoOpt(tour, start);
+
+				if (visulize) {
+					numTwoOpts++;
+					graph.drawEdges(tour, "Number of 2-Opts: " + numTwoOpts);
+				}
 			}
 		}
 	}
 	
-	public boolean makeOneTwoOpt(short[] tour){
-		for (int i = 0; i < numNodes-1; i++) {
-			for (int j = (i+2); j < numNodes-1; j++) {
+	public int makeOneTwoOpt(int[] tour, int start){
+		for (int i = start; i < numNodes-1; i++) {
+			
+			for (int k = 0; k < numNodes-3; k++) {
+				
+				int j = i+2+k;
+				
+				if (j >= numNodes) {
+					j = 0;
+				}
+				
+//				j = j % numNodes;
+//				System.out.println("j=" + j);
+				
 				int x1 = tour[i];
 				int x2 = tour[i+1];
+				
+				
+				
 				int y1 = tour[j];
-				int y2 = tour[j+1];
+				int y2 = j == numNodes - 1 ? tour[0] : tour[j+1];
 				
 				int old_cost = distanceMatrix[x1][x2] + distanceMatrix[y1][y2];
 				int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
 				
 				if (new_cost < old_cost) {
-					swap(tour, (short)(i+1), (short)j);	
-					return true;
+//					System.out.println(new_cost);
+					swap(tour,(i+1),j);	
+					return i;
 				}
 			}
-			int x1 = tour[i];
-			int x2 = tour[i+1];
-			int y1 = tour[numNodes-1];
-			int y2 = tour[0];
 			
-			int old_cost = distanceMatrix[x1][x2] + distanceMatrix[y1][y2];
-			int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
-			
-			if (new_cost < old_cost) {
-				swap(tour, (short)(i+1), (short)(numNodes-1));	
-				return true;
-			}
+//			int x1 = tour[i];
+//			int x2 = tour[i+1];
+//			int y1 = tour[numNodes-1];
+//			int y2 = tour[0];
+//			
+//			int old_cost = distanceMatrix[x1][x2] + distanceMatrix[y1][y2];
+//			int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
+//			
+//			if (new_cost < old_cost) {
+//				swap(tour, (short)(i+1), (short)(numNodes-1));	
+//				return i;
+//			}
 		}
-		return false;
+		
+		return -1;
 	}
 	
-	public void swap(short[] tour, short x, short y) {
-		short tmp = 0;
+	public void swap(int[] tour, int x, int y) {
+		int tmp = 0;
 		if(x > y){
 			tmp = x;
 			x = y;
@@ -342,9 +412,22 @@ public class TspMain {
 		//TODO go the other way if x-y > tour.length/2 
 	}
 	
-	public int calcDistance(float x1, float y1, float x2, float y2) {
-		float dx = Math.abs(x1 - x2);
-		float dy = Math.abs(y1 - y2);
-		return (int) Math.round(Math.hypot(dx, dy));
+	public int calculateCost(int[] tour) {
+		int cost = 0;
+
+		for (int i = 1; i < tour.length; i++) {
+			cost += distanceMatrix[tour[i - 1]][tour[i]];
+		}
+		
+		cost += distanceMatrix[tour[0]][tour[tour.length - 1]];
+
+		return cost;
+	}
+	
+	private int calcDistance(float x1, float y1, float x2, float y2) {
+		double dx = x1 - x2;
+		double dy = y1 - y2;
+		
+		return (int) Math.round(Math.sqrt(dx*dx + dy*dy)); 
 	}
 }
