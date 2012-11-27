@@ -16,7 +16,7 @@ public class TspMain {
 	public static final boolean CW = false;
 	public static final boolean NN = true;
 	private static final int NUMBER_OF_TRIES = 10;
-	private int NUMBER_OF_NIEGHBORS = 20;
+	private int NUMBER_OF_NIEGHBORS = 10;
 	
 	
 	private static final float P = 0.1F;
@@ -53,7 +53,7 @@ public class TspMain {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			numNodes = Integer.parseInt(in.readLine());
-			NUMBER_OF_NIEGHBORS = NUMBER_OF_NIEGHBORS < numNodes ? NUMBER_OF_NIEGHBORS : numNodes;
+			NUMBER_OF_NIEGHBORS = NUMBER_OF_NIEGHBORS < numNodes ? NUMBER_OF_NIEGHBORS : numNodes-1;
 			float[] nodesX = new float[numNodes];
 			float[] nodesY = new float[numNodes];
 			
@@ -85,7 +85,7 @@ public class TspMain {
 					distanceMatrix[j][i] = distanceMatrix[i][j];
 					
 				}
-				int[] tmp = distanceMatrix[i].clone();
+				int[] tmp = Arrays.copyOf(distanceMatrix[i],distanceMatrix[i].length);
 				Arrays.sort(tmp);
 				int max = tmp[NUMBER_OF_NIEGHBORS];
 				int index = 0;
@@ -93,8 +93,12 @@ public class TspMain {
 					if(i==j) continue;
 					if(distanceMatrix[i][j] <= max){
 						neighbors[i][index] = j;
-						index++;
+						if(++index == NUMBER_OF_NIEGHBORS) break;
+						
 					}
+				}
+				if(DEBUG){
+					System.out.println(i +": "+Arrays.toString(neighbors[i]));
 				}
 			}
 			if (visulize) {
