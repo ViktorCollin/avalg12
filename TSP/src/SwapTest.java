@@ -1,9 +1,35 @@
 import java.util.Arrays;
+import java.util.Random;
 
 public class SwapTest {
+	private static Random random = new Random();
 
+	public static void oldSwap(int[] tour, int x, int y) {
+		int tmp = 0;
+		if(x > y){
+			x--;
+			y++;
+			
+			tmp = x;
+			x = y;
+			y = tmp;
+		}
+		
+		while(x<y){
+			tmp = tour[x];
+			tour[x] = tour[y];
+			tour[y] = tmp;
+			x++;
+			y--;
+		}
+		//TODO go the other way if x-y > tour.length/2 
+	}
+	
 	public static void swap(int[] tour, int x, int y) {
 		if (x > y) {
+			x--;
+			y++;
+			
 			int tmp = x;
 			x = y;
 			y = tmp;
@@ -43,9 +69,8 @@ public class SwapTest {
 			System.out.println("Step 1: " + Arrays.toString(tour));
 
 			if (nLeft > nRight + 1) {
-				swapHelper(tour, 0, x - nShared, false);
+				swapHelper(tour, 0, x - nShared - 1, false);
 			} else if (nLeft + 1 < nRight) {
-				System.out.println(String.format("swap(tour, %d, %d, false);", y + nShared + 1, tour.length -1));
 				swapHelper(tour, y + nShared + 1, tour.length - 1, false);
 			}
 
@@ -64,6 +89,9 @@ public class SwapTest {
 
 		for (int i = 0; i < xs.length; i++) {
 			if (xs[i] != ys[(ys.length - i + offset) % ys.length]) {
+				if (Arrays.equals(xs, ys))
+					return true;
+				
 				return false;
 			}
 		}
@@ -71,20 +99,28 @@ public class SwapTest {
 		return true;
 	}
 
+	private static int[] randomList() {
+		int length = random.nextInt(100) + 1;
+		
+		
+		return null;
+	}
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		int[] xs = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 , 12, 13, 14 };
+		int[] xs = new int[] {2, 9, 3, 12, 1, 5, 13};
 		int[] ys = Arrays.copyOf(xs, xs.length);
 
-		swapHelper(xs, 0, 12, true);
-		swapHelper(ys, 0, 12, false);
+		int x = 6;
+		int y = 0;
+		
+		oldSwap(xs, x, y);
+		swapHelper(ys, x, y, true);
 
 		System.out.println(Arrays.toString(ys));
-
 		System.out.println(Arrays.toString(xs));
-
 		System.out.println(isEqual(xs, ys));
 	}
 
