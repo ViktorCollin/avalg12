@@ -50,6 +50,7 @@ public class newVisulizer extends Canvas {
 		g.setColor(Color.red);
 		for(int i=0;i<nodesX.length;i++){
 			g.fillRoundRect(nodesX[i]-(NODESIZE/2), nodesY[i]-(NODESIZE/2), NODESIZE, NODESIZE, NODESIZE, NODESIZE);
+			g.drawString(i+"", nodesX[i]-(NODESIZE/2)-5, nodesY[i]-(NODESIZE/2)-5);
 		}
 		g.dispose();
 	}

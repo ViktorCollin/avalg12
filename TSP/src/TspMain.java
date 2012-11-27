@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 
 public class TspMain {
@@ -14,8 +15,13 @@ public class TspMain {
 	public static final long breakTime = System.currentTimeMillis() + RUNTIME;
 	public static final boolean CW = false;
 	public static final boolean NN = true;
-	private static final int NUMBER_OF_TRIES = 3;
+	private static final int NUMBER_OF_TRIES = 10;
 	private int NUMBER_OF_NIEGHBORS = 20;
+	
+	
+	private static final float P = 0.1F;
+	private static Random RND = new Random();
+
 	
 	
 	int[][] distanceMatrix;
@@ -151,7 +157,7 @@ public class TspMain {
 	public int[] nerestNeighbor() {
 		int[] tour = new int[numNodes];
 		boolean[] used = new boolean[numNodes];
-		int start = 0; //new Random().nextInt(numNodes);
+		int start = new Random().nextInt(numNodes);
 		
 		if (DEBUG)
 			System.out.println("Start node: " + start);
@@ -348,76 +354,64 @@ public class TspMain {
 		int numTwoOpts = 0;
 		int start = 0;
 
-		for (int i = 0; i < 7; i++) {
-			start = 0;
+		while (start != -1 && (System.currentTimeMillis() < breakTime || visulize)) {
+			start = makeOneTwoOpt(tour, start);
 
-			while (start >= 0
-					&& (System.currentTimeMillis() < breakTime || visulize)) {
-				start = makeOneTwoOpt(tour, start);
-
-				if (visulize) {
-					numTwoOpts++;
-					graph.drawEdges(tour, "Number of 2-Opts: " + numTwoOpts);
-				}
+			if (visulize) {
+				numTwoOpts++;
+				graph.drawEdges(tour, "Number of 2-Opts: " + numTwoOpts);
 			}
 		}
 	}
 	
 	public int makeOneTwoOpt(int[] tour, int start){
-		for (int i = start; i < numNodes-1; i++) {
+		for (int i = start; i < numNodes - 1; i++) {
+			int x1 = tour[i];
+			int x2 = tour[i+1];
+			int visited = 0;
 			
-			for (int k = 0; k < numNodes-3; k++) {
+			int j = i + 2;
+			
+			while (visited <= numNodes - 3) { // Testa alla kanter - 3
 				
-				int j = i+2+k;
-				if (j >= numNodes) {
-					j -= numNodes;
+				if (j == numNodes) {
+					j = 0;
 				}
 				
-//				j = j % numNodes;
-//				System.out.println("j=" + j);
-				
-				int x1 = tour[i];
-				int x2 = tour[i+1];
-				
-				
-				
 				int y1 = tour[j];
-				int y2 = j == numNodes - 1 ? tour[0] : tour[j+1];
+				int y2 = j+1 == numNodes ? tour[0] : tour[j+1];
+				
+				visited++;
 				
 				int old_cost = distanceMatrix[x1][x2] + distanceMatrix[y1][y2];
 				int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
 				
 				if (new_cost < old_cost) {
-//					System.out.println(new_cost);
-					swap(tour,(i+1),j);	
+					oldSwap(tour,(i+1),j);
 					return i;
-				}
+				} /* else if (RND.nextFloat() < 0.000004F) {
+					swap(tour, (i+1), j);
+					return i+1;
+				} */
+				
+				j++;
 			}
-			
-//			int x1 = tour[i];
-//			int x2 = tour[i+1];
-//			int y1 = tour[numNodes-1];
-//			int y2 = tour[0];
-//			
-//			int old_cost = distanceMatrix[x1][x2] + distanceMatrix[y1][y2];
-//			int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
-//			
-//			if (new_cost < old_cost) {
-//				swap(tour, (short)(i+1), (short)(numNodes-1));	
-//				return i;
-//			}
 		}
 		
 		return -1;
 	}
 	
-	public void swap(int[] tour, int x, int y) {
+	public void oldSwap(int[] tour, int x, int y) {
 		int tmp = 0;
 		if(x > y){
+			x--;
+			y++;
+			
 			tmp = x;
 			x = y;
 			y = tmp;
 		}
+		
 		while(x<y){
 			tmp = tour[x];
 			tour[x] = tour[y];
@@ -427,6 +421,57 @@ public class TspMain {
 		}
 		//TODO go the other way if x-y > tour.length/2 
 	}
+	
+	public static void swap(int[] tour, int x, int y) {
+		if(x > y){
+			x--;
+			y++;
+			
+			int tmp = x;
+			x = y;
+			y = tmp;
+		}
+		
+		
+		swapHelper(tour, x, y, (y - x > tour.length/2));
+	}
+	
+	public static void swapHelper(int[] tour, int x, int y, boolean crazyMode) {
+		int tmp;
+		if (!crazyMode) {
+			while (x < y) {
+				tmp = tour[x];
+				tour[x] = tour[y];
+				tour[y] = tmp;
+				x++;
+				y--;
+			}
+		} else {
+			int nLeft = x;
+			int nRight = tour.length - 1 - y;
+			// x < y
+			int nShared = Math.min(nLeft, nRight);
+
+			// delade
+			for (int i = 0; i < nShared; i++) {
+//				System.out.println(i);
+				tmp = tour[y + 1 + i];
+				tour[y + 1 + i] = tour[x - 1 - i];
+				tour[x - 1 - i] = tmp;
+			}
+			
+//			System.out.println("Step 1: " + Arrays.toString(tour));
+
+			if (nLeft > nRight + 1) {
+				swapHelper(tour, 0, x - nShared, false);
+			} else if (nLeft + 1 < nRight) {
+//				System.out.println(String.format("swap(tour, %d, %d, false);", y + nShared + 1, tour.length -1));
+				swapHelper(tour, y + nShared + 1, tour.length - 1, false);
+			}
+
+		}
+	}
+
 	
 	public int calculateCost(int[] tour) {
 		int cost = 0;
