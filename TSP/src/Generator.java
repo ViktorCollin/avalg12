@@ -12,7 +12,7 @@ public class Generator {
 		}else if(args.length == 2){
 			new Generator(args);
 		}else{
-			System.out.println("java Generator <numNodes> <algoritm>(random, dense, circle)");
+			System.out.println("java Generator <numNodes> <algoritm>(random, dense, circle, cbig, csmall)");
 		}
 
 	}
@@ -27,8 +27,12 @@ public class Generator {
 			dense(numNodes);
 		} else if(args[1].equalsIgnoreCase("circle")){
 			circle(numNodes);
+		} else if(args[1].equalsIgnoreCase("cbig")){
+			cBig(numNodes);
+		} else if(args[1].equalsIgnoreCase("csmall")){
+			cSmall(numNodes);
 		} else {
-			System.out.println("java Generator <numNodes> <algoritm>(random, dense, circle)");
+			System.out.println("java Generator <numNodes> <algoritm>(random, dense, circle, cbig, csmall)");
 		}
 	}
 	
@@ -64,7 +68,29 @@ public class Generator {
 			y = r + r*Math.sin(t);
 			System.out.println(x+" "+y);
 		}
-		
-		
+	}
+	
+	public void cBig(int numNodes){
+		int r = MAX/2;
+		double x, y, t, dt = (2*Math.PI)/(numNodes/2);
+		for(int i=0;i<numNodes/2;i++){
+			t = i*dt;
+			x = r*Math.cos(t);
+			y = r*Math.sin(t);
+			System.out.println((r+x)+" "+(r+y));
+			System.out.println((r+10*x/11)+" "+(r+10*y/11));
+		}
+	}
+	
+	public void cSmall(int numNodes){
+		int r = MAX/2;
+		double x, y, t, dt = (2*Math.PI)/(numNodes/2);
+		for(int i=0;i<numNodes/2;i++){
+			t = i*dt;
+			x = r*Math.cos(t);
+			y = r*Math.sin(t);
+			System.out.println((r+x)+" "+(r+y));
+			System.out.println((r+2*x/3)+" "+(r+2*y/3));
+		}
 	}
 }

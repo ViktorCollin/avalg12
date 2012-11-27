@@ -34,7 +34,6 @@ public class SwapTest {
 			x = y;
 			y = tmp;
 		}
-		
 		swapHelper(tour, x, y, (y - x > tour.length/2));
 	}
 	
