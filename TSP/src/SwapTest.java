@@ -9,7 +9,7 @@ public class SwapTest {
 		tour[x] = tour[y];
 		tour[y] = tmp;
 		
-		if(l > tour.length/2 && y > x){
+		if(l > tour.length/2){
 			System.out.println(Arrays.toString(tour));
 			y++;
 			x--;

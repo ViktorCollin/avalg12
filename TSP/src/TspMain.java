@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,9 +15,11 @@ public class TspMain {
 	public static final boolean CW = false;
 	public static final boolean NN = true;
 	private static final int NUMBER_OF_TRIES = 3;
+	private int NUMBER_OF_NIEGHBORS = 20;
 	
 	
 	int[][] distanceMatrix;
+	int[][] neighbors;
 	int numNodes;
 	newVisulizer graph;
 	boolean visulize = false;
@@ -44,6 +47,7 @@ public class TspMain {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			numNodes = Integer.parseInt(in.readLine());
+			NUMBER_OF_NIEGHBORS = NUMBER_OF_NIEGHBORS < numNodes ? NUMBER_OF_NIEGHBORS : numNodes;
 			float[] nodesX = new float[numNodes];
 			float[] nodesY = new float[numNodes];
 			
@@ -53,6 +57,7 @@ public class TspMain {
 			}
 			
 			distanceMatrix = new int[numNodes][numNodes];
+			neighbors = new int[numNodes][NUMBER_OF_NIEGHBORS];
 			for (int i = 0; i < numNodes; i++) {
 				String line = in.readLine();
 				int index = line.indexOf(" ");
@@ -72,6 +77,18 @@ public class TspMain {
 				for (int j = i + 1; j < numNodes; j++) {					
 					distanceMatrix[i][j] = calcDistance(nodesX[i], nodesY[i], nodesX[j], nodesY[j]);
 					distanceMatrix[j][i] = distanceMatrix[i][j];
+					
+				}
+				int[] tmp = distanceMatrix[i].clone();
+				Arrays.sort(tmp);
+				int max = tmp[NUMBER_OF_NIEGHBORS];
+				int index = 0;
+				for(int j=0;j<numNodes;j++){
+					if(i==j) continue;
+					if(distanceMatrix[i][j] <= max){
+						neighbors[i][index] = j;
+						index++;
+					}
 				}
 			}
 			if (visulize) {
@@ -352,9 +369,8 @@ public class TspMain {
 			for (int k = 0; k < numNodes-3; k++) {
 				
 				int j = i+2+k;
-				
 				if (j >= numNodes) {
-					j = 0;
+					j -= numNodes;
 				}
 				
 //				j = j % numNodes;
