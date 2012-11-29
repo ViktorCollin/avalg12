@@ -73,7 +73,7 @@ public class newVisulizer extends Canvas {
 		strategy.show();
 		if(SLOWMOTION){
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
 		}
