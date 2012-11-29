@@ -11,8 +11,8 @@ public class TspMain {
 //	public static final boolean CW = false;
 //	public static final boolean NN = true;
 	private static final int NUMBER_OF_TRIES = 10;
-	private int NUMBER_OF_NIEGHBORS = 700;
-	private static final boolean USE_NIEGHBOR = false; 
+	private int NUMBER_OF_NIEGHBORS = 5;
+	private static final boolean USE_NIEGHBOR = true; 
 	
 	private static final boolean PRINT_COST = false;
 
@@ -171,10 +171,24 @@ public class TspMain {
 			indexes[start] = 0;
 		}
 		used[start] = true;
-
 		int i = start;
-
 		for (int k = 1; k < numNodes; k++) {
+			if(USE_NIEGHBOR){
+				for(int j=0;j<NUMBER_OF_NIEGHBORS;j++){
+					int best = neighbors[i][j];
+					if(!used[best]){
+						tour[k] = best;
+						indexes[best] = k;
+						used[best] = true;
+						k++;
+						i = best;
+						if(DEBUG){
+							System.out.println("Found in neighbors");
+						}
+					}
+				}
+				if(k == numNodes) break;
+			}
 			int best = -1;
 			int bestDistance = -1;
 
@@ -192,6 +206,9 @@ public class TspMain {
 			tour[k] = best;
 			if(USE_NIEGHBOR){
 				indexes[best] = k;
+			}
+			if(DEBUG){
+				System.out.println("NOT found in neighbors");
 			}
 			used[best] = true;
 			i = best;
