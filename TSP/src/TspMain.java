@@ -10,8 +10,9 @@ public class TspMain {
 //	public static final long breakTime = System.currentTimeMillis() + RUNTIME;
 //	public static final boolean CW = false;
 //	public static final boolean NN = true;
-	private static final int NUMBER_OF_TRIES = 10;
+	private static final int NUMBER_OF_TRIES = 1;
 	private int NUMBER_OF_NIEGHBORS = 10;
+	private static final boolean USE_NIEGHBOR = true; 
 	
 	private static final boolean PRINT_COST = false;
 
@@ -25,6 +26,7 @@ public class TspMain {
 	int[][] distanceMatrix;
 	int[][] neighbors;
 	int numNodes;
+	int[] indexes;
 	newVisulizer graph;
 	boolean visulize = false;
 	// if CW
@@ -53,7 +55,10 @@ public class TspMain {
 			float[] nodesY = new float[numNodes];
 
 			distanceMatrix = new int[numNodes][numNodes];
-			neighbors = new int[numNodes][NUMBER_OF_NIEGHBORS];
+			if(USE_NIEGHBOR){
+				indexes = new int[numNodes];
+				neighbors = new int[numNodes][NUMBER_OF_NIEGHBORS];
+			}
 			for (int i = 0; i < numNodes; i++) {
 				String line = in.readLine();
 				int index = line.indexOf(" ");
@@ -68,20 +73,22 @@ public class TspMain {
 					distanceMatrix[j][i] = distanceMatrix[i][j];
 					
 				}
-				int[] tmp = Arrays.copyOf(distanceMatrix[i],distanceMatrix[i].length);
-				Arrays.sort(tmp);
-				int max = tmp[NUMBER_OF_NIEGHBORS];
-				int index = 0;
-				for(int j=0;j<numNodes;j++){
-					if(i==j) continue;
-					if(distanceMatrix[i][j] <= max){
-						neighbors[i][index] = j;
-						if(++index == NUMBER_OF_NIEGHBORS) break;
-						
+				if(USE_NIEGHBOR){
+					int[] tmp = Arrays.copyOf(distanceMatrix[i],distanceMatrix[i].length);
+					Arrays.sort(tmp);
+					int max = tmp[NUMBER_OF_NIEGHBORS];
+					int index = 0;
+					for(int j=0;j<numNodes;j++){
+						if(i==j) continue;
+						if(distanceMatrix[i][j] <= max){
+							neighbors[i][index] = j;
+							if(++index == NUMBER_OF_NIEGHBORS) break;
+
+						}
 					}
-				}
-				if(DEBUG){
-					System.out.println(i +": "+Arrays.toString(neighbors[i]));
+					if(DEBUG){
+						System.out.println(i +": "+Arrays.toString(neighbors[i]));
+					}
 				}
 			}
 			
@@ -103,10 +110,18 @@ public class TspMain {
 		for (int n = 0; n < NUMBER_OF_TRIES; n++) {
 			// Step 1 - Initial tour
 			int[] tour = nerestNeighbor();
+			
 			if (visulize) {
 				graph.drawEdges(tour, "Initial guess: NN");
 			}
-
+//			makeOneTwoOptNeighbor(tour, 0);
+//			if(DEBUG){
+//				System.out.println("Tour:    "+Arrays.toString(tour));
+//				System.out.println("Indexes: "+Arrays.toString(indexes));
+//			}
+//			if (visulize) {
+//				graph.drawEdges(tour, "1");
+//			}
 			// Step 2 - Optimizations
 			twoOpt(tour);
 
@@ -130,15 +145,15 @@ public class TspMain {
 		
 		USE_RANDOM = true;
 		
-		for (int i = 0; i < 10; i++) {
-			int[] tour_copy = Arrays.copyOf(bestTour, bestTour.length);
-			twoOpt(tour_copy);
-			int copyCost = calculateCost(tour_copy);
-			if (copyCost < bestCost) {
-				bestTour = tour_copy;
-				bestCost = copyCost;
-			}
-		}
+//		for (int i = 0; i < 10; i++) {
+//			int[] tour_copy = Arrays.copyOf(bestTour, bestTour.length);
+//			twoOpt(tour_copy);
+//			int copyCost = calculateCost(tour_copy);
+//			if (copyCost < bestCost) {
+//				bestTour = tour_copy;
+//				bestCost = copyCost;
+//			}
+//		}
 		
 
 		// Step 4 - Print the best tour
@@ -153,12 +168,15 @@ public class TspMain {
 	private int[] nerestNeighbor() {
 		int[] tour = new int[numNodes];
 		boolean[] used = new boolean[numNodes];
-		int start = new Random().nextInt(numNodes);
+		int start = 0;//RND.nextInt(numNodes);
 
 		if (DEBUG)
 			System.out.println("Start node: " + start);
 
 		tour[0] = start;
+		if(USE_NIEGHBOR){
+			indexes[start] = 0;
+		}
 		used[start] = true;
 
 		int i = start;
@@ -179,6 +197,9 @@ public class TspMain {
 			}
 
 			tour[k] = best;
+			if(USE_NIEGHBOR){
+				indexes[best] = k;
+			}
 			used[best] = true;
 			i = best;
 		}
@@ -192,8 +213,11 @@ public class TspMain {
 
 		while (start != -1) {
 				//&& (System.currentTimeMillis() < breakTime || visulize)) {
-			start = makeOneTwoOpt(tour, start);
-
+			if(USE_NIEGHBOR){
+				start = makeOneTwoOptNeighbor(tour, start);
+			}else {
+				start = makeOneTwoOpt(tour, start);
+			}
 			if (visulize) {
 				numTwoOpts++;
 				graph.drawEdges(tour, "Number of 2-Opts: " + numTwoOpts);
@@ -239,8 +263,33 @@ public class TspMain {
 
 		return -1;
 	}
+	
+	private int makeOneTwoOptNeighbor(int[] tour, int start){
+		for (int i = start; i < numNodes - 1; i++) {
+			int x1 = tour[i];	
+			int x2 = tour[i + 1];
+			for(int j=0;j<NUMBER_OF_NIEGHBORS;j++){
+				int tmp = indexes[neighbors[i][j]];
+				int y1 = tour[tmp];
+				int y2 = tmp+1 == numNodes ? tour[0] : tour[tmp+1];
 
-	private static void oldSwap(int[] tour, int x, int y) {
+
+				int old_cost = distanceMatrix[x1][x2] + distanceMatrix[y1][y2];
+				int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
+
+				if (new_cost < old_cost) {					
+					oldSwap(tour, (i+1), tmp);
+					return i;
+				} else if (USE_RANDOM && new_cost - old_cost < RANDOM_MIN_DISTANCE && RND.nextFloat() < P){
+					oldSwap(tour, (i+1), tmp);
+					return i; 
+				}
+			}
+		}
+		return -1;
+	}
+
+	private void oldSwap(int[] tour, int x, int y) {
 		int tmp = 0;
 		if (x > y) {
 			x--;
@@ -252,6 +301,11 @@ public class TspMain {
 		}
 
 		while (x < y) {
+			if(USE_NIEGHBOR){
+				tmp = indexes[x];
+				indexes[x] = indexes[y];
+				indexes[y] = tmp;
+			}
 			tmp = tour[x];
 			tour[x] = tour[y];
 			tour[y] = tmp;
@@ -261,7 +315,7 @@ public class TspMain {
 		// TODO go the other way if x-y > tour.length/2
 	}
 
-	private static void swap(int[] tour, int x, int y) {
+	private void swap(int[] tour, int x, int y) {
 		if (x > y) {
 			x--;
 			y++;
@@ -274,7 +328,7 @@ public class TspMain {
 		swapHelper(tour, x, y, (y - x > tour.length/2));
 	}
 	
-	private static void swapHelper(int[] tour, int x, int y, boolean crazyMode) {
+	private void swapHelper(int[] tour, int x, int y, boolean crazyMode) {
 		int tmp;
 		if (!crazyMode) {
 			while (x < y) {

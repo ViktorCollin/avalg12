@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 
 public class newVisulizer extends Canvas {
 	private static final long serialVersionUID = 1L;
+	private static final boolean SLOWMOTION = false;
 	private static final int PADDING = 30;
 	private static final int SIZE = Generator.MAX+(2*PADDING);
 	private static final int NODESIZE = 10;
@@ -47,10 +48,13 @@ public class newVisulizer extends Canvas {
 		Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
 		g.setColor(Color.black);
 		g.fillRect(0,0,SIZE,SIZE);
+		g.setColor(Color.DARK_GRAY);
+		for(int i=0;i<nodesX.length;i++){
+			g.drawString(i+"", nodesX[i]-(NODESIZE/2)-5, nodesY[i]-(NODESIZE/2)-5);
+		}
 		g.setColor(Color.red);
 		for(int i=0;i<nodesX.length;i++){
 			g.fillRoundRect(nodesX[i]-(NODESIZE/2), nodesY[i]-(NODESIZE/2), NODESIZE, NODESIZE, NODESIZE, NODESIZE);
-			g.drawString(i+"", nodesX[i]-(NODESIZE/2)-5, nodesY[i]-(NODESIZE/2)-5);
 		}
 		g.dispose();
 	}
@@ -67,6 +71,12 @@ public class newVisulizer extends Canvas {
 		g.drawLine(nodesX[tour[0]], nodesY[tour[0]], nodesX[tour[tour.length-1]], nodesY[tour[tour.length-1]]);
 		g.dispose();
 		strategy.show();
+		if(SLOWMOTION){
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+		}
 	}
 	
 	public void drawEdges(int[] tour){
