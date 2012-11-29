@@ -10,9 +10,9 @@ public class TspMain {
 //	public static final long breakTime = System.currentTimeMillis() + RUNTIME;
 //	public static final boolean CW = false;
 //	public static final boolean NN = true;
-	private static final int NUMBER_OF_TRIES = 1;
-	private int NUMBER_OF_NIEGHBORS = 10;
-	private static final boolean USE_NIEGHBOR = true; 
+	private static final int NUMBER_OF_TRIES = 10;
+	private int NUMBER_OF_NIEGHBORS = 700;
+	private static final boolean USE_NIEGHBOR = false; 
 	
 	private static final boolean PRINT_COST = false;
 
@@ -114,14 +114,7 @@ public class TspMain {
 			if (visulize) {
 				graph.drawEdges(tour, "Initial guess: NN");
 			}
-//			makeOneTwoOptNeighbor(tour, 0);
-//			if(DEBUG){
-//				System.out.println("Tour:    "+Arrays.toString(tour));
-//				System.out.println("Indexes: "+Arrays.toString(indexes));
-//			}
-//			if (visulize) {
-//				graph.drawEdges(tour, "1");
-//			}
+
 			// Step 2 - Optimizations
 			twoOpt(tour);
 
@@ -145,15 +138,15 @@ public class TspMain {
 		
 		USE_RANDOM = true;
 		
-//		for (int i = 0; i < 10; i++) {
-//			int[] tour_copy = Arrays.copyOf(bestTour, bestTour.length);
-//			twoOpt(tour_copy);
-//			int copyCost = calculateCost(tour_copy);
-//			if (copyCost < bestCost) {
-//				bestTour = tour_copy;
-//				bestCost = copyCost;
-//			}
-//		}
+		for (int i = 0; i < 10; i++) {
+			int[] tour_copy = Arrays.copyOf(bestTour, bestTour.length);
+			twoOpt(tour_copy);
+			int copyCost = calculateCost(tour_copy);
+			if (copyCost < bestCost) {
+				bestTour = tour_copy;
+				bestCost = copyCost;
+			}
+		}
 		
 
 		// Step 4 - Print the best tour
@@ -168,7 +161,7 @@ public class TspMain {
 	private int[] nerestNeighbor() {
 		int[] tour = new int[numNodes];
 		boolean[] used = new boolean[numNodes];
-		int start = 0;//RND.nextInt(numNodes);
+		int start = RND.nextInt(numNodes);
 
 		if (DEBUG)
 			System.out.println("Start node: " + start);
@@ -270,6 +263,7 @@ public class TspMain {
 			int x2 = tour[i + 1];
 			for(int j=0;j<NUMBER_OF_NIEGHBORS;j++){
 				int tmp = indexes[neighbors[i][j]];
+				if(Math.abs(i-tmp) <= 1) continue; 
 				int y1 = tour[tmp];
 				int y2 = tmp+1 == numNodes ? tour[0] : tour[tmp+1];
 
