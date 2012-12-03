@@ -7,17 +7,17 @@ import java.util.Random;
 
 
 public class TspMain {
-	private static final boolean USE_NIEGHBOR = false;
+	private static final boolean USE_NIEGHBOR = true;
 	private static final boolean USE_RANDOM_IN_INIT = true;
 	private static final boolean TWO_OPT = true;
 	private static final boolean SIM_ANN = false;
 	private static final boolean PRINT_COST = false;
 	protected static boolean DEBUG = false;
-	private static final int NUMBER_OF_TRIES = 10;
+	private static final int NUMBER_OF_TRIES = 1;
 	private static final int RANDOM_MIN_DISTANCE = 10;
 	private static final float P = 0.2F;
 	private boolean USE_RANDOM = false;
-	private int NUMBER_OF_NIEGHBORS = 20;
+	private int NUMBER_OF_NIEGHBORS = 5;
 
 	// Random things
 	
@@ -53,7 +53,7 @@ public class TspMain {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			numNodes = Integer.parseInt(in.readLine());
-			NUMBER_OF_NIEGHBORS = NUMBER_OF_NIEGHBORS <= numNodes ? NUMBER_OF_NIEGHBORS : numNodes;
+			NUMBER_OF_NIEGHBORS = NUMBER_OF_NIEGHBORS < numNodes ? NUMBER_OF_NIEGHBORS : numNodes-1;
 			float[] nodesX = new float[numNodes];
 			float[] nodesY = new float[numNodes];
 
@@ -70,8 +70,6 @@ public class TspMain {
 			}
 
 			in.close();
-
-			// TODO: Optimera detta :-) DONE! GICK FRN 150 ms TILL 100 ms 
 			for (int i = 0; i < numNodes; i++) {
 				for (int j = i+1; j < numNodes; j++) {
 					distanceMatrix[i][j] = calcDistance(nodesX[i], nodesY[i], nodesX[j], nodesY[j]);
@@ -88,17 +86,20 @@ public class TspMain {
 						}
 						j++;
 					}
-					for(;j<numNodes;j++){
+					while(j<numNodes){
 						if (i != j){
 							if(q.peek().distance > distanceMatrix[i][j]){
 								q.remove();
 								q.add(new Node(distanceMatrix[i][j], j));
 							}
 						}
+						j++;
 					}
 					for (int x=NUMBER_OF_NIEGHBORS-1; x >= 0 ; x--) {
 						neighbors[i][x] = q.remove().number;
 					}
+					System.out.print(i + ": ");
+					printArray(neighbors[i]);
 				}
 			}			
 			if (visulize) {
@@ -145,6 +146,7 @@ public class TspMain {
 
 			}
 		}
+		graph.drawEdges(bestTour, "Best tour so far");
 		
 		
 		if (SIM_ANN) {
@@ -257,29 +259,15 @@ public class TspMain {
 	}
 
 	private int makeOneTwoOpt(int[] tour, int start) {
-		for (int i = start; i < numNodes - 1; i++) {
+		for (int i = start; i < numNodes; i++) {
 			int x1 = tour[i];	
-			int x2 = tour[i + 1];
-		
-			int visited = 0;
+			int x2 = i + 1 == numNodes ? tour[0] : tour[i + 1];
 
-
-//			int j = 0;
-
-//			while (visited <= numNodes - 3) { // Testa alla kanter - 3
 			for (int j = 0; j < numNodes ; j++) {
 				if(Math.abs(i-j) <= 1) continue;
-			
-//				if (j == numNodes) {
-//					j = 0;
-//				}
-
-//				System.out.println("(" + i + ", " + j + ")");
 				
 				int y1 = tour[j];
 				int y2 = j + 1 == numNodes ? tour[0] : tour[j + 1];
-
-				visited++;
 
 				int old_cost = distanceMatrix[x1][x2] + distanceMatrix[y1][y2];
 				int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
@@ -291,8 +279,6 @@ public class TspMain {
 					oldSwap(tour, (i+1), j);
 					return i; 
 				}
-				 
-//				j++;
 			}
 		}
 
@@ -300,9 +286,9 @@ public class TspMain {
 	}
 	
 	private int makeOneTwoOptNeighbor(int[] tour, int start){
-		for (int i = start; i < numNodes - 1; i++) {
+		for (int i = start; i < numNodes; i++) {
 			int x1 = tour[i];	
-			int x2 = tour[i + 1];
+			int x2 = (i+1)==numNodes ? tour[0] : tour[i + 1];
 						
 			for (int j = 0; j < NUMBER_OF_NIEGHBORS; j++) {				
 				int tmp = indexes[neighbors[i][j]];
