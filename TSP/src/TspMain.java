@@ -7,22 +7,20 @@ import java.util.Random;
 
 
 public class TspMain {
-	private static final boolean USE_NIEGHBOR = true;
-	private static final boolean USE_RANDOM_IN_INIT = false;
+	private static final boolean USE_NIEGHBOR = false;
+	private static final boolean USE_RANDOM_IN_INIT = true;
+	private static final boolean TWO_OPT = true;
 	private static final boolean SIM_ANN = false;
 	private static final boolean PRINT_COST = false;
 	protected static boolean DEBUG = false;
-	private static final int NUMBER_OF_TRIES = 1;
+	private static final int NUMBER_OF_TRIES = 10;
 	private static final int RANDOM_MIN_DISTANCE = 10;
 	private static final float P = 0.2F;
-	private int NUMBER_OF_NIEGHBORS = 5;
- 
-	
-	
-
+	private boolean USE_RANDOM = false;
+	private int NUMBER_OF_NIEGHBORS = 20;
 
 	// Random things
-	private boolean USE_RANDOM = false;
+	
 	private static Random RND = new Random();
 
 	int[][] distanceMatrix;
@@ -39,7 +37,6 @@ public class TspMain {
 //		try {
 //			Thread.sleep(5000L);
 //		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
 		
@@ -71,27 +68,39 @@ public class TspMain {
 				nodesX[i] = Float.parseFloat(line.substring(0, index));
 				nodesY[i] = Float.parseFloat(line.substring(index + 1));
 			}
-			
+
 			in.close();
-			
-			// TODO: Optimera detta :-)
-			
+
+			// TODO: Optimera detta :-) DONE! GICK FRÅN 150 ms TILL 100 ms 
 			for (int i = 0; i < numNodes; i++) {
-				PriorityQueue<Node> q = new PriorityQueue<Node>();
-				
-				for (int j = 0; j < numNodes; j++) {
+				for (int j = i+1; j < numNodes; j++) {
 					distanceMatrix[i][j] = calcDistance(nodesX[i], nodesY[i], nodesX[j], nodesY[j]);
-					distanceMatrix[j][i] = distanceMatrix[i][j];
-					
-					if (i != j)
-						q.add(new Node(distanceMatrix[i][j], j));
-				}
-				
-				for (int j = 0; j < NUMBER_OF_NIEGHBORS; j++) {
-					neighbors[i][j] = q.remove().number;
+					distanceMatrix[j][i] = distanceMatrix[i][j];	
 				}
 			}
-						
+			if(USE_NIEGHBOR){
+				for(int i=0;i<numNodes;i++){
+					PriorityQueue<Node> q = new PriorityQueue<Node>();
+					int j = 0;
+					while(q.size()<NUMBER_OF_NIEGHBORS){
+						if (i != j){
+							q.add(new Node(distanceMatrix[i][j], j));
+						}
+						j++;
+					}
+					for(;j<numNodes;j++){
+						if (i != j){
+							if(q.peek().distance > distanceMatrix[i][j]){
+								q.remove();
+								q.add(new Node(distanceMatrix[i][j], j));
+							}
+						}
+					}
+					for (int x=NUMBER_OF_NIEGHBORS-1; x >= 0 ; x--) {
+						neighbors[i][x] = q.remove().number;
+					}
+				}
+			}			
 			if (visulize) {
 				graph = new newVisulizer(nodesX, nodesY, distanceMatrix);
 			}
@@ -115,7 +124,9 @@ public class TspMain {
 			}
 
 			// Step 2 - Optimizations
-			twoOpt(tour);
+			if(TWO_OPT){
+				twoOpt(tour);
+			}
 
 			// Step 3 - Better than before?
 			int cost = calculateCost(tour);
@@ -137,7 +148,6 @@ public class TspMain {
 		
 		
 		if (SIM_ANN) {
-		
 			USE_RANDOM = true;
 			
 			int[] old_indexes = null;
@@ -169,6 +179,7 @@ public class TspMain {
 	}
 
 	private int[] nerestNeighbor() {
+		long startTime = System.currentTimeMillis();
 		int[] tour = new int[numNodes];
 		boolean[] used = new boolean[numNodes];
 		int start = USE_RANDOM_IN_INIT ? RND.nextInt(numNodes) : 0;
@@ -183,6 +194,7 @@ public class TspMain {
 		used[start] = true;
 		int i = start;
 		for (int k = 1; k < numNodes; k++) {
+			// går från 20 ms till 6 ms
 			if(USE_NIEGHBOR){
 				for(int j=0;j<NUMBER_OF_NIEGHBORS;j++){
 					int best = neighbors[i][j];
@@ -192,9 +204,7 @@ public class TspMain {
 						used[best] = true;
 						k++;
 						i = best;
-						if(DEBUG){
-							System.out.println("Found in neighbors");
-						}
+						j = -1;
 					}
 				}
 				if(k == numNodes) break;
@@ -217,12 +227,12 @@ public class TspMain {
 				indexes[best] = k;
 			}
 			if(DEBUG){
-				System.out.println("NOT found in neighbors");
+				//System.out.println("NOT found in neighbors");
 			}
 			used[best] = true;
 			i = best;
 		}
-
+		System.out.println("Time: "+(System.currentTimeMillis()-startTime));
 		return tour;
 	}
 
@@ -382,5 +392,14 @@ public class TspMain {
 	
 	private static void printArray(int[] xs) {
 		System.out.println(Arrays.toString(xs));
+	}
+	private static String queueToString(PriorityQueue<Node> q) {
+		PriorityQueue<Node> copy = new PriorityQueue<Node>(q);
+		StringBuilder sb = new StringBuilder("[");
+		while(!copy.isEmpty()){
+			sb.append(copy.remove() + ", ");
+		}
+		
+		return sb.substring(0, sb.length()-2)+"]";
 	}
 }
