@@ -11,6 +11,7 @@ public class TspMainRoundTwo {
 	protected static boolean DEBUG = false;
 	private static final int NUMBER_OF_TRIES = 20;
 	private int NUMBER_OF_NIEGHBORS = 25;
+	private static boolean BENCHMARK = false;
 	
 	// Random things
 	
@@ -26,8 +27,10 @@ public class TspMainRoundTwo {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {		
-		new TspMainRoundTwo(args.length != 0 && System.getenv("BENCHMARK") == null).run();
+	public static void main(String[] args) {
+		BENCHMARK = (System.getenv("BENCHMARK") != null);
+		
+		new TspMainRoundTwo(args.length != 0).run();
 	}
 
 	public TspMainRoundTwo(boolean visulize) {
@@ -156,8 +159,12 @@ public class TspMainRoundTwo {
 			}
 		}
 		
-		printTour(bestTour);
-		System.err.println(bestCost);
+		if (BENCHMARK) {
+			System.out.println(bestCost);
+		} else {
+			printTour(bestTour);
+			System.err.println(bestCost);
+		}
 	}
 	
 	private int[] randomSwap(int[] g) {
