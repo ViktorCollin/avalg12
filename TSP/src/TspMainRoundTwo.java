@@ -11,7 +11,11 @@ public class TspMainRoundTwo {
 	protected static boolean DEBUG = false;
 	private static final int NUMBER_OF_TRIES = 20;
 	private int NUMBER_OF_NIEGHBORS = 25;
-
+	
+	private static long START_TIME = System.currentTimeMillis();
+	private static long FIRST_THRESHOLD = START_TIME + 800L;
+	private static long END_TIME = FIRST_THRESHOLD + 800L;
+	
 	// Random things
 	
 	private static Random RND = new Random();
@@ -106,10 +110,12 @@ public class TspMainRoundTwo {
 	private void run() {
 		int[] bestTour = null;
 		int bestCost = Integer.MAX_VALUE;
+		int[] g = null;
 
-		for (int n = 0; n < NUMBER_OF_TRIES; n++) {
+//		for (int n = 0; n < NUMBER_OF_TRIES; n++) {
+		while (System.currentTimeMillis() < FIRST_THRESHOLD) {
 			// Step 1 - Initial tour
-			int[] g = nerestNeighbor();
+			g = nerestNeighbor();
 			
 			if (visulize) {
 				graph.drawEdges(g, "Initial guess: NN");
@@ -135,7 +141,41 @@ public class TspMainRoundTwo {
 			}
 		}
 		
+		// Step 4 - Random swap + 2opt
+		while (System.currentTimeMillis() < END_TIME) {
+			g = twoOpt(randomSwap(Arrays.copyOf(bestTour, bestTour.length)));
+			int cost = calculateCostVer2(g);
+			
+			if (cost < bestCost) {
+				bestTour = g;
+				bestCost = cost;
+
+				if (DEBUG) {
+					System.out.println("Better!");
+				}
+			}
+		}
+		
 		printTour(bestTour);
+		System.err.println(bestCost);
+	}
+	
+	private int[] randomSwap(int[] g) {
+		
+		int x1 = RND.nextInt(g.length);
+		int x2 = g[x1];
+		
+		int y1 = RND.nextInt(g.length);
+		int y2 = g[y1];
+		
+		while (x2 != y1 && y2 != x1 && x1 != y1) {
+			y1 = RND.nextInt(g.length);
+			y2 = g[y1];
+		}
+		
+		stupidSwap(g, x1, y1);
+		
+		return g;
 	}
 
 	private int[] nerestNeighbor() {
