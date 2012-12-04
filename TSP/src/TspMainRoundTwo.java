@@ -12,10 +12,6 @@ public class TspMainRoundTwo {
 	private static final int NUMBER_OF_TRIES = 20;
 	private int NUMBER_OF_NIEGHBORS = 25;
 	
-	private static long START_TIME = System.currentTimeMillis();
-	private static long FIRST_THRESHOLD = START_TIME + 800L;
-	private static long END_TIME = FIRST_THRESHOLD + 800L;
-	
 	// Random things
 	
 	private static Random RND = new Random();
@@ -31,7 +27,7 @@ public class TspMainRoundTwo {
 	 * @param args
 	 */
 	public static void main(String[] args) {		
-		new TspMainRoundTwo(false).run();
+		new TspMainRoundTwo(args.length != 0 && System.getenv("BENCHMARK") == null).run();
 	}
 
 	public TspMainRoundTwo(boolean visulize) {
@@ -108,6 +104,10 @@ public class TspMainRoundTwo {
 	}
 
 	private void run() {
+		long START_TIME = System.currentTimeMillis();
+		long FIRST_THRESHOLD = START_TIME + 800L;
+		long END_TIME = FIRST_THRESHOLD + 800L;
+		
 		int[] bestTour = null;
 		int bestCost = Integer.MAX_VALUE;
 		int[] g = null;
