@@ -15,7 +15,7 @@ public class TspMainRoundTwo {
 	private static boolean BENCHMARK = false;
 	private static final double KVOT_2OPT = 0.5;
 	private static final long START_TIME = System.currentTimeMillis();
-	private static final long END_TIME = START_TIME + 1900L;
+	private static final long END_TIME = START_TIME + 1700L;
 	private static final long FIRST_THRES = Math.round(START_TIME + (END_TIME-START_TIME)*KVOT_2OPT);
 	
 	
