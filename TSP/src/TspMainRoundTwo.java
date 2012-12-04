@@ -11,11 +11,11 @@ public class TspMainRoundTwo {
 	protected static boolean DEBUG = false;
 	private static int NUMBER_OF_TRIES_2OPT = 20;
 	private static int NUMBER_OF_TRIES_RND = 20;
-	private int NUMBER_OF_NIEGHBORS = 25;
+	private int NUMBER_OF_NIEGHBORS = 20;
 	private static boolean BENCHMARK = false;
 	private static final double KVOT_2OPT = 0.5;
 	private static final long START_TIME = System.currentTimeMillis();
-	private static final long END_TIME = START_TIME + 1900L;
+	private static final long END_TIME = START_TIME + 1750L;
 	private static final long FIRST_THRES = Math.round(START_TIME + (END_TIME-START_TIME)*KVOT_2OPT);
 	
 	
@@ -119,7 +119,6 @@ public class TspMainRoundTwo {
 		int[] g = null;
 		int tries = 0;
 
-//		for (int n = 0; n < NUMBER_OF_TRIES; n++) {
 		while (System.currentTimeMillis() < FIRST_THRES || (visulize && NUMBER_OF_TRIES_2OPT > tries++)) {
 			// Step 1 - Initial tour
 			g = nerestNeighbor();
@@ -127,7 +126,7 @@ public class TspMainRoundTwo {
 			if (visulize) {
 				graph.drawEdges(g, "Initial guess: NN");
 			}
-			
+						
 			// Step 2 - 2-opt
 			g = twoOpt(g);
 
@@ -196,10 +195,6 @@ public class TspMainRoundTwo {
 		int start = USE_RANDOM_IN_INIT ? RND.nextInt(numNodes) : 0;
 		
 		int i = start;
-		
-//		if (DEBUG)
-//			System.out.println("Start node: " + i);
-
 		used[i] = true;
 		
 		int best = -1;
@@ -208,13 +203,28 @@ public class TspMainRoundTwo {
 			best = -1;
 			int bestDistance = Integer.MAX_VALUE;
 			
-			for (int j = 0; j < numNodes; j++) {
-				if (j == i)
+			// Check in the neighbour list first:
+			for (int n = 0; n < NUMBER_OF_NIEGHBORS; n++) {
+				int j = neighbors[i][n];
+				
+				if (i == j)
 					continue;
 				
 				if (!used[j] && distanceMatrix[i][j] < bestDistance) {
 					best = j;
 					bestDistance = distanceMatrix[i][j];
+				}
+			}
+			
+			if (best == -1) {
+				for (int j = 0; j < numNodes; j++) {
+					if (j == i)
+						continue;
+					
+					if (!used[j] && distanceMatrix[i][j] < bestDistance) {
+						best = j;
+						bestDistance = distanceMatrix[i][j];
+					}
 				}
 			}
 			
