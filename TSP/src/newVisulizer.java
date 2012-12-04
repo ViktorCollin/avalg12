@@ -93,6 +93,8 @@ public class newVisulizer extends Canvas {
 		int cost = 0;
 		visited[tour[0]] = true;
 		for(int i=1;i<tour.length;i++){
+			if (visited[tour[i]])
+				System.err.println("NODE: " + i + " DUBBLETT!!");
 			visited[tour[i]] = true;
 			cost += distanceMatrix[tour[i-1]][tour[i]];
 		}

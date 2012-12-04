@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.PriorityQueue;
 import java.util.Random;
@@ -13,10 +14,14 @@ public class TspMainRoundTwo {
 	private static int NUMBER_OF_TRIES_RND = 20;
 	private int NUMBER_OF_NIEGHBORS = 25;
 	private static boolean BENCHMARK = false;
-	private static final double KVOT_2OPT = 0.5;
+	private static final double KVOT_2OPT = 0.2;
 	private static final long START_TIME = System.currentTimeMillis();
-	private static final long END_TIME = START_TIME + 1700L;
+	private static final long END_TIME = START_TIME + 1800L;
 	private static final long FIRST_THRES = Math.round(START_TIME + (END_TIME-START_TIME)*KVOT_2OPT);
+	private static final boolean GREEDY = false;
+	
+	
+	private Edge[] edges;
 	
 	
 	// Random things
@@ -72,13 +77,25 @@ public class TspMainRoundTwo {
 
 			in.close();
 			
+			int edges_x = 0;
+			if (GREEDY) 
+				edges = new Edge[numNodes * (numNodes-1) / 2];
+			
 			for (int i = 0; i < numNodes; i++) {
 				for (int j = i+1; j < numNodes; j++) {
 					distanceMatrix[i][j] = calcDistance(nodesX[i], nodesY[i], nodesX[j], nodesY[j]);
-					distanceMatrix[j][i] = distanceMatrix[i][j];	
+					distanceMatrix[j][i] = distanceMatrix[i][j];
+					
+					if (GREEDY) {
+						edges[edges_x++] = new Edge(i, j, distanceMatrix[i][j]);
+					}
+						
 				}
 			}
 			
+			if (GREEDY)
+				Arrays.sort(edges);
+	
 			for(int i=0;i<numNodes;i++){
 				PriorityQueue<Node> q = new PriorityQueue<Node>();
 				int j = 0;
@@ -118,32 +135,49 @@ public class TspMainRoundTwo {
 		int bestCost = Integer.MAX_VALUE;
 		int[] g = null;
 		int tries = 0;
-
-//		for (int n = 0; n < NUMBER_OF_TRIES; n++) {
-		while (System.currentTimeMillis() < FIRST_THRES || (visulize && NUMBER_OF_TRIES_2OPT > tries++)) {
-			// Step 1 - Initial tour
-			g = nerestNeighbor();
-			
+		
+		
+		if (GREEDY) {
+			bestTour = greedy();
 			if (visulize) {
-				graph.drawEdges(g, "Initial guess: NN");
+				graph.drawEdges(bestTour, "Initial guess: NN");
 			}
+			bestTour = twoOpt(bestTour);
+			bestCost = calculateCostVer2(bestTour);
 			
-			// Step 2 - 2-opt
-			g = twoOpt(g);
-
-			
-			// Step 3 - Better than before?
+			g = twoOpt(nerestNeighbor());
 			int cost = calculateCostVer2(g);
-
 			if (cost < bestCost) {
 				bestTour = g;
 				bestCost = cost;
-
-				if (DEBUG) {
-					System.out.println("Better!");
+			}
+		} else {
+			while (System.currentTimeMillis() < FIRST_THRES || (visulize && NUMBER_OF_TRIES_2OPT > tries++)) {
+				// Step 1 - Initial tour
+				g = nerestNeighbor();
+				
+				if (visulize) {
+					graph.drawEdges(g, "Initial guess: NN");
+				}
+		
+				// Step 2 - 2-opt
+				g = twoOpt(g);
+		
+				
+				// Step 3 - Better than before?
+				int cost = calculateCostVer2(g);
+	
+				if (cost < bestCost) {
+					bestTour = g;
+					bestCost = cost;
+	
+					if (DEBUG) {
+						System.out.println("Better!");
+					}
 				}
 			}
 		}
+		
 		
 		
 		if (DEBUG)
@@ -189,6 +223,150 @@ public class TspMainRoundTwo {
 		
 		return stupidSwap(g, x1, y1);
 	}
+	
+	private int[] greedy() {
+		int[] visited = new int[numNodes];
+		
+		ArrayList<ArrayList<Integer>> components = new ArrayList<ArrayList<Integer>>(numNodes / 2);
+		
+		OUTER_LOOP:
+		for (Edge edge : edges) {
+			int x1 = edge.x1;
+			int x2 = edge.x2;
+			
+			if (visited[x1] == 0 && visited[x2] == 0) {
+				ArrayList<Integer> subtour = new ArrayList<Integer>();
+				subtour.add(x1);
+				subtour.add(x2);
+				components.add(subtour);
+				visited[x1] = 1;
+				visited[x2] = 1;
+			} else if (visited[x1] == 1 && visited[x2] == 0) {
+				
+				for (ArrayList<Integer> subtour : components) {
+					int last = subtour.size() - 1;
+					
+					if (subtour.get(0) == x1) {
+						subtour.add(0, x2);
+						break;
+					} else if (subtour.get(last) == x1) {
+						subtour.add(x2);
+						break;
+					}
+				}
+				visited[x1]++;
+				visited[x2]++;
+			} else if (visited[x1] == 0 && visited[x2] == 1) {
+				for (ArrayList<Integer> subtour : components) {
+					int last = subtour.size() - 1;
+					
+					if (subtour.get(0) == x2) {
+						subtour.add(0, x1);
+						break;
+					} else if (subtour.get(last) == x2) {
+						subtour.add(x1);
+						break;
+					}
+				}
+				visited[x1]++;
+				visited[x2]++;
+			
+			} else if (visited[x1] == 1 && visited[x2] == 1) {
+				ArrayList<Integer> firstSubTour = null;
+				int firstSubTourIndex = -1;
+				ArrayList<Integer> secondSubTour = null;
+				int secondSubTourIndex = -1;
+				
+				for (int i = 0; i < components.size(); i++) {
+					ArrayList<Integer> subtour = components.get(i);
+					int last = subtour.size() - 1;
+					
+					if ((subtour.get(0) == x1 && subtour.get(last) == x2) || (subtour.get(last) == x1 && subtour.get(0) == x2)) {
+						continue OUTER_LOOP;
+					}
+					
+					if (subtour.get(0) == x1 || subtour.get(last) == x1) {
+						firstSubTour = subtour;
+						firstSubTourIndex = i;
+						
+						if (subtour.get(0) == x1)
+							subtour.add(0, x2);
+						else
+							subtour.add(x2);
+						
+						if (secondSubTour != null)
+							break;
+					} else if (subtour.get(0) == x2 || subtour.get(last) == x2) {
+						secondSubTour = subtour;
+						secondSubTourIndex = i;
+						
+						if (firstSubTour != null)
+							break;
+					}
+				}
+								
+				if (firstSubTourIndex < secondSubTourIndex) {
+					components.remove(secondSubTourIndex);
+					components.remove(firstSubTourIndex);
+				} else {
+					components.remove(firstSubTourIndex);
+					components.remove(secondSubTourIndex);
+				}
+				visited[x1]++;
+				visited[x2]++;
+//				System.out.println("--");
+//				System.out.println(components);
+//				System.out.println(firstSubTour);
+//				System.out.println(secondSubTour);
+				components.add(mergeSubTours(firstSubTour, secondSubTour));
+				
+				if (components.get(0).size() == numNodes)
+					break;
+			}
+		}
+				
+		int[] g = new int[numNodes];
+	
+		ArrayList<Integer> tour = components.get(0);
+			
+		for (int i = 0; i < tour.size() - 1; i++) {	
+			g[tour.get(i)] = tour.get(i+1);
+		}
+		
+		g[tour.get(tour.size() - 1)] = tour.get(0);
+		return g;
+	}
+	
+	private ArrayList<Integer> mergeSubTours(ArrayList<Integer> xs, ArrayList<Integer> ys) {
+		int xs_first = xs.get(0);
+		int xs_last = xs.get(xs.size() - 1);
+		int ys_first = ys.get(0);
+		int ys_last = ys.get(ys.size() - 1);
+		
+		if (xs_first == ys_last) {
+			ys.remove(ys.size() - 1);
+			ys.addAll(xs);
+			return ys;
+		} else if (xs_last == ys_first) {
+			xs.remove(xs.size() - 1);
+			xs.addAll(ys);
+			return xs;
+		} else if (xs_first == ys_first) {
+			ArrayList<Integer> zs = new ArrayList<Integer>();
+			for (int i = xs.size() - 1; i > 0; i--)
+				zs.add(xs.get(i));
+			
+			zs.addAll(ys);
+			return zs;
+		} else if (xs_last == ys_last) {
+			for (int i = ys.size() - 2; i >= 0; i--) {
+				xs.add(ys.get(i));
+			}
+			return xs;
+		} else {
+			throw new RuntimeException("FEEEL");
+		}
+	}
 
 	private int[] nerestNeighbor() {
 		int[] g = new int[numNodes];
@@ -196,10 +374,6 @@ public class TspMainRoundTwo {
 		int start = USE_RANDOM_IN_INIT ? RND.nextInt(numNodes) : 0;
 		
 		int i = start;
-		
-//		if (DEBUG)
-//			System.out.println("Start node: " + i);
-
 		used[i] = true;
 		
 		int best = -1;
@@ -208,13 +382,28 @@ public class TspMainRoundTwo {
 			best = -1;
 			int bestDistance = Integer.MAX_VALUE;
 			
-			for (int j = 0; j < numNodes; j++) {
-				if (j == i)
+			// Check in the neighbour list first:
+			for (int n = 0; n < NUMBER_OF_NIEGHBORS; n++) {
+				int j = neighbors[i][n];
+				
+				if (i == j)
 					continue;
 				
 				if (!used[j] && distanceMatrix[i][j] < bestDistance) {
 					best = j;
 					bestDistance = distanceMatrix[i][j];
+				}
+			}
+			
+			if (best == -1) {
+				for (int j = 0; j < numNodes; j++) {
+					if (j == i)
+						continue;
+					
+					if (!used[j] && distanceMatrix[i][j] < bestDistance) {
+						best = j;
+						bestDistance = distanceMatrix[i][j];
+					}
 				}
 			}
 			
