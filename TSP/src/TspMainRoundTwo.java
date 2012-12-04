@@ -9,8 +9,15 @@ import java.util.Random;
 public class TspMainRoundTwo {
 	private static final boolean USE_RANDOM_IN_INIT = true;
 	protected static boolean DEBUG = false;
-	private static final int NUMBER_OF_TRIES = 20;
+	private static int NUMBER_OF_TRIES_2OPT = 20;
+	private static int NUMBER_OF_TRIES_RND = 20;
 	private int NUMBER_OF_NIEGHBORS = 25;
+	private static boolean BENCHMARK = false;
+	private static final double KVOT_2OPT = 0.5;
+	private static final long START_TIME = System.currentTimeMillis();
+	private static final long END_TIME = START_TIME + 1900L;
+	private static final long FIRST_THRES = Math.round(START_TIME + (END_TIME-START_TIME)*KVOT_2OPT);
+	
 	
 	// Random things
 	
@@ -26,9 +33,9 @@ public class TspMainRoundTwo {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {		
-		new TspMainRoundTwo(args.length != 0 && System.getenv("BENCHMARK") == null).run();
-
+	public static void main(String[] args) {
+		BENCHMARK = (System.getenv("BENCHMARK") != null);
+		new TspMainRoundTwo(args.length != 0).run();
 	}
 
 	public TspMainRoundTwo(boolean visulize) {
@@ -105,16 +112,14 @@ public class TspMainRoundTwo {
 	}
 
 	private void run() {
-		long START_TIME = System.currentTimeMillis();
-		long FIRST_THRESHOLD = START_TIME + 800L;
-		long END_TIME = FIRST_THRESHOLD + 800L;
 		
 		int[] bestTour = null;
 		int bestCost = Integer.MAX_VALUE;
 		int[] g = null;
+		int tries = 0;
 
 //		for (int n = 0; n < NUMBER_OF_TRIES; n++) {
-		while (System.currentTimeMillis() < FIRST_THRESHOLD) {
+		while (System.currentTimeMillis() < FIRST_THRES || (visulize && NUMBER_OF_TRIES_2OPT > tries++)) {
 			// Step 1 - Initial tour
 			g = nerestNeighbor();
 			
@@ -143,7 +148,8 @@ public class TspMainRoundTwo {
 		}
 		
 		// Step 4 - Random swap + 2opt
-		while (System.currentTimeMillis() < END_TIME) {
+		tries = 0;
+		while (System.currentTimeMillis() < END_TIME|| (visulize && NUMBER_OF_TRIES_RND > tries++)) {
 			g = twoOpt(randomSwap(Arrays.copyOf(bestTour, bestTour.length)));
 			int cost = calculateCostVer2(g);
 			
@@ -157,8 +163,12 @@ public class TspMainRoundTwo {
 			}
 		}
 		
-		printTour(bestTour);
-		System.err.println(bestCost);
+		if (BENCHMARK) {
+			System.out.println(bestCost);
+		} else {
+			printTour(bestTour);
+			System.err.println(bestCost);
+		}
 	}
 	
 	private int[] randomSwap(int[] g) {
