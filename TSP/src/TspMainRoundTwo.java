@@ -34,7 +34,8 @@ public class TspMainRoundTwo {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		BENCHMARK = (System.getenv("BENCHMARK") != null);
+//		BENCHMARK = (System.getenv("BENCHMARK") != null);
+		
 		new TspMainRoundTwo(args.length != 0).run();
 	}
 
@@ -133,9 +134,6 @@ public class TspMainRoundTwo {
 			
 			// Step 3 - Better than before?
 			int cost = calculateCostVer2(g);
-			if (DEBUG) {
-				System.out.println("Cost: " + cost);
-			}
 
 			if (cost < bestCost) {
 				bestTour = g;
@@ -146,6 +144,10 @@ public class TspMainRoundTwo {
 				}
 			}
 		}
+		
+		
+		if (DEBUG)
+			System.out.println(" -- STEP 4 --");
 		
 		// Step 4 - Random swap + 2opt
 		tries = 0;
@@ -158,9 +160,10 @@ public class TspMainRoundTwo {
 				bestCost = cost;
 
 				if (DEBUG) {
-					System.out.println("Better!");
+					System.out.println("Better! ");
 				}
 			}
+			
 		}
 		
 		if (BENCHMARK) {
@@ -179,14 +182,12 @@ public class TspMainRoundTwo {
 		int y1 = RND.nextInt(g.length);
 		int y2 = g[y1];
 		
-		while (x2 != y1 && y2 != x1 && x1 != y1) {
+		while (x2 == y1 || y2 == x1 || x1 == y1) {
 			y1 = RND.nextInt(g.length);
 			y2 = g[y1];
 		}
 		
-		stupidSwap(g, x1, y1);
-		
-		return g;
+		return stupidSwap(g, x1, y1);
 	}
 
 	private int[] nerestNeighbor() {
@@ -196,8 +197,8 @@ public class TspMainRoundTwo {
 		
 		int i = start;
 		
-		if (DEBUG)
-			System.out.println("Start node: " + i);
+//		if (DEBUG)
+//			System.out.println("Start node: " + i);
 
 		used[i] = true;
 		
