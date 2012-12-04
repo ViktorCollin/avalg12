@@ -9,16 +9,18 @@ import java.util.Random;
 
 public class TspMainRoundTwo {
 	private static final boolean USE_RANDOM_IN_INIT = true;
+	private static final boolean USE_NEIGHBORS = true;
 	protected static boolean DEBUG = false;
 	private static int NUMBER_OF_TRIES_2OPT = 20;
 	private static int NUMBER_OF_TRIES_RND = 20;
 	private int NUMBER_OF_NIEGHBORS = 25;
 	private static boolean BENCHMARK = false;
-	private static final double KVOT_2OPT = 0.2;
+	private static final double KVOT_2OPT = 0.5;
 	private static final long START_TIME = System.currentTimeMillis();
-	private static final long END_TIME = START_TIME + 1800L;
+	private static final long END_TIME = START_TIME + 1700L;
 	private static final long FIRST_THRES = Math.round(START_TIME + (END_TIME-START_TIME)*KVOT_2OPT);
 	private static final boolean GREEDY = false;
+	private static final boolean STUPID_FAST = true;
 	
 	
 	private Edge[] edges;
@@ -85,40 +87,40 @@ public class TspMainRoundTwo {
 				for (int j = i+1; j < numNodes; j++) {
 					distanceMatrix[i][j] = calcDistance(nodesX[i], nodesY[i], nodesX[j], nodesY[j]);
 					distanceMatrix[j][i] = distanceMatrix[i][j];
-					
+
 					if (GREEDY) {
 						edges[edges_x++] = new Edge(i, j, distanceMatrix[i][j]);
 					}
-						
+
 				}
 			}
-			
+
 			if (GREEDY)
 				Arrays.sort(edges);
-	
-			for(int i=0;i<numNodes;i++){
-				PriorityQueue<Node> q = new PriorityQueue<Node>();
-				int j = 0;
-				while(q.size()<NUMBER_OF_NIEGHBORS){
-					if (i != j){
-						q.add(new Node(distanceMatrix[i][j], j));
-					}
-					j++;
-				}
-				while(j<numNodes){
-					if (i != j){
-						if(q.peek().distance > distanceMatrix[i][j]){
-							q.remove();
+			if(USE_NEIGHBORS){
+				for(int i=0;i<numNodes;i++){
+					PriorityQueue<Node> q = new PriorityQueue<Node>();
+					int j = 0;
+					while(q.size()<NUMBER_OF_NIEGHBORS){
+						if (i != j){
 							q.add(new Node(distanceMatrix[i][j], j));
 						}
+						j++;
 					}
-					j++;
-				}
-				for (int x=NUMBER_OF_NIEGHBORS-1; x >= 0 ; x--) {
-					neighbors[i][x] = q.remove().number;
+					while(j<numNodes){
+						if (i != j){
+							if(q.peek().distance > distanceMatrix[i][j]){
+								q.remove();
+								q.add(new Node(distanceMatrix[i][j], j));
+							}
+						}
+						j++;
+					}
+					for (int x=NUMBER_OF_NIEGHBORS-1; x >= 0 ; x--) {
+						neighbors[i][x] = q.remove().number;
+					}
 				}
 			}
-	
 			if (visulize) {
 				graph = new VisWrapper(nodesX, nodesY, distanceMatrix);
 			}
@@ -140,7 +142,7 @@ public class TspMainRoundTwo {
 		if (GREEDY) {
 			bestTour = greedy();
 			if (visulize) {
-				graph.drawEdges(bestTour, "Initial guess: NN");
+				graph.drawEdges(bestTour, "Initial guess: GR");
 			}
 			bestTour = twoOpt(bestTour);
 			bestCost = calculateCostVer2(bestTour);
@@ -151,6 +153,13 @@ public class TspMainRoundTwo {
 				bestTour = g;
 				bestCost = cost;
 			}
+		} else if(STUPID_FAST){
+			bestTour = stupidfast();
+			if (visulize) {
+				graph.drawEdges(bestTour, "Initial guess: SF");
+			}
+			bestTour = twoOpt(bestTour);
+			bestCost = calculateCostVer2(bestTour);
 		} else {
 			while (System.currentTimeMillis() < FIRST_THRES || (visulize && NUMBER_OF_TRIES_2OPT > tries++)) {
 				// Step 1 - Initial tour
@@ -185,7 +194,7 @@ public class TspMainRoundTwo {
 		
 		// Step 4 - Random swap + 2opt
 		tries = 0;
-		while (System.currentTimeMillis() < END_TIME|| (visulize && NUMBER_OF_TRIES_RND > tries++)) {
+		while (System.currentTimeMillis() < END_TIME || (visulize && NUMBER_OF_TRIES_RND > tries++)) {
 			g = twoOpt(randomSwap(Arrays.copyOf(bestTour, bestTour.length)));
 			int cost = calculateCostVer2(g);
 			
@@ -367,6 +376,15 @@ public class TspMainRoundTwo {
 			throw new RuntimeException("FEEEL");
 		}
 	}
+	
+	private int[] stupidfast(){
+		int[] g = new int[numNodes];
+		for(int i=0;i<numNodes-1;i++){
+			g[i] = i+1;
+		}
+		g[numNodes-1] = 0;
+		return g;
+	}
 
 	private int[] nerestNeighbor() {
 		int[] g = new int[numNodes];
@@ -442,23 +460,38 @@ public class TspMainRoundTwo {
 		for (int k = 0; k < g.length; k++) {
 			int x1 = p;
 			int x2 = g[x1];
+			if(USE_NEIGHBORS){
+				for (int j = 0; j < NUMBER_OF_NIEGHBORS; j++) {
+					int y1 = neighbors[x1][j];
+					int y2 = g[y1];
 
-			for (int j = 0; j < NUMBER_OF_NIEGHBORS; j++) {
-				int y1 = neighbors[x1][j];
-				int y2 = g[y1];
-				
-				if (x2 == y1 || y2 == x1 || x1 == y1) {
-					continue;
+					if (x2 == y1 || y2 == x1 || x1 == y1) {
+						continue;
+					}
+
+					int old_cost = distanceMatrix[x1][x2] + distanceMatrix[y1][y2];
+					int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
+
+					if (new_cost < old_cost) {
+						return stupidSwap(g, x1, y1);
+					}
 				}
-				
-				int old_cost = distanceMatrix[x1][x2] + distanceMatrix[y1][y2];
-				int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
-				
-				if (new_cost < old_cost) {
-					return stupidSwap(g, x1, y1);
+			} else{
+				for(int j=0;j<numNodes;j++){
+					int y1 = g[j];
+					int y2 = g[y1];
+					if (x2 == y1 || y2 == x1 || x1 == y1) {
+						continue;
+					}
+
+					int old_cost = distanceMatrix[x1][x2] + distanceMatrix[y1][y2];
+					int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
+
+					if (new_cost < old_cost) {
+						return stupidSwap(g, x1, y1);
+					}
 				}
 			}
-
 			p = x2;
 		}
 
