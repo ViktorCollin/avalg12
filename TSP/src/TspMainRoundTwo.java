@@ -31,7 +31,7 @@ public class TspMainRoundTwo {
 	 * @param args
 	 */
 	public static void main(String[] args) {		
-		new TspMainRoundTwo(false).run();
+		new TspMainRoundTwo(args.length != 0).run();
 	}
 
 	public TspMainRoundTwo(boolean visulize) {

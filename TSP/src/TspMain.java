@@ -7,8 +7,8 @@ import java.util.Random;
 
 
 public class TspMain {
-	private static final boolean USE_NIEGHBOR = true;
-	private static final boolean USE_RANDOM_IN_INIT = true;
+	private static final boolean USE_NIEGHBOR = false;
+	private static final boolean USE_RANDOM_IN_INIT = false;
 	private static final boolean TWO_OPT = true;
 	private static final boolean SIM_ANN = false;
 	private static final boolean PRINT_COST = false;
@@ -17,7 +17,7 @@ public class TspMain {
 	private static final int RANDOM_MIN_DISTANCE = 10;
 	private static final float P = 0.2F;
 	private boolean USE_RANDOM = false;
-	private int NUMBER_OF_NIEGHBORS = 5;
+	private int NUMBER_OF_NIEGHBORS = 20;
 
 	// Random things
 	
@@ -98,8 +98,8 @@ public class TspMain {
 					for (int x=NUMBER_OF_NIEGHBORS-1; x >= 0 ; x--) {
 						neighbors[i][x] = q.remove().number;
 					}
-					System.out.print(i + ": ");
-					printArray(neighbors[i]);
+					//System.out.print(i + ": ");
+					//printArray(neighbors[i]);
 				}
 			}			
 			if (visulize) {
@@ -146,7 +146,9 @@ public class TspMain {
 
 			}
 		}
-		graph.drawEdges(bestTour, "Best tour so far");
+		if(visulize){
+		//	graph.drawEdges(bestTour, "Best tour so far");
+		}
 		
 		
 		if (SIM_ANN) {
@@ -196,7 +198,6 @@ public class TspMain {
 		used[start] = true;
 		int i = start;
 		for (int k = 1; k < numNodes; k++) {
-			// gŒr frŒn 20 ms till 6 ms
 			if(USE_NIEGHBOR){
 				for(int j=0;j<NUMBER_OF_NIEGHBORS;j++){
 					int best = neighbors[i][j];
@@ -234,7 +235,7 @@ public class TspMain {
 			used[best] = true;
 			i = best;
 		}
-		System.out.println("Time: "+(System.currentTimeMillis()-startTime));
+		//System.out.println("Time: "+(System.currentTimeMillis()-startTime));
 		return tour;
 	}
 
@@ -289,7 +290,7 @@ public class TspMain {
 		for (int i = start; i < numNodes; i++) {
 			int x1 = tour[i];	
 			int x2 = (i+1)==numNodes ? tour[0] : tour[i + 1];
-						
+
 			for (int j = 0; j < NUMBER_OF_NIEGHBORS; j++) {				
 				int tmp = indexes[neighbors[i][j]];
 				
@@ -301,15 +302,15 @@ public class TspMain {
 
 
 				int old_cost = distanceMatrix[x1][x2] + distanceMatrix[y1][y2];
-				int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
+				int new_cost = distanceMatrix[x1][y1] + distanceMatrix[x2][y2];
 
-				if (new_cost < old_cost) {					
-					oldSwap(tour, (i + 1), tmp);
+				if (new_cost < old_cost ){
+					oldSwap(tour, (i+1), tmp);
 					return i;
 				} else if (USE_RANDOM && new_cost - old_cost < RANDOM_MIN_DISTANCE && RND.nextFloat() < P){
 					oldSwap(tour, (i+1), tmp);
 					return i; 
-				}
+				} 
 			}
 		}
 		return -1;
@@ -387,5 +388,13 @@ public class TspMain {
 		}
 		
 		return sb.substring(0, sb.length()-2)+"]";
+	}
+	public int[] generateIndexes(int tour[]){
+		int[] indexes = new int[tour.length];
+		
+		for (int i = 0; i < tour.length; i++)
+			indexes[tour[i]] = i;
+		
+		return indexes;
 	}
 }
