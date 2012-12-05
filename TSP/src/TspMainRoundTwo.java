@@ -10,7 +10,7 @@ import java.util.Random;
 public class TspMainRoundTwo {
 	private static final boolean USE_RANDOM_IN_INIT = true;
 	private static final boolean USE_NEIGHBORS = true;
-	private static final boolean USE_RANDOM = true;
+	private static final boolean USE_RANDOM = false;
 	protected static boolean DEBUG = false;
 	private static int NUMBER_OF_TRIES_NN = 20;
 	private static int NUMBER_OF_TRIES_RND = 200;
@@ -21,7 +21,7 @@ public class TspMainRoundTwo {
 	private static final boolean ALL = false;
 	private static final boolean GREEDY = true;
 	private static final boolean STUPID_FAST = false;
-	private static final boolean USE_TWO_OPT = true;
+	private static final boolean USE_TWO_OPT = false;
 	
 	
 	private Edge[] edges;
@@ -29,7 +29,7 @@ public class TspMainRoundTwo {
 	
 	// Random things
 	
-	private static Random RND = new Random();
+	private static Random RND = new Random(2);
 
 	int[][] distanceMatrix;
 	int[][] neighbors;
@@ -100,26 +100,44 @@ public class TspMainRoundTwo {
 			if (GREEDY || ALL)
 				Arrays.sort(edges);
 			if(USE_NEIGHBORS){
-				for(int i=0;i<numNodes;i++){
-					PriorityQueue<Node> q = new PriorityQueue<Node>();
-					int j = 0;
-					while(q.size()<NUMBER_OF_NIEGHBORS){
-						if (i != j){
-							q.add(new Node(distanceMatrix[i][j], j));
+				if(GREEDY || ALL){
+					int[] indexes = new int[numNodes];
+					int x1, x2;
+					for(Edge e : edges){
+						x1 = e.x1;
+						x2 = e.x2;
+						if(indexes[x1] < NUMBER_OF_NIEGHBORS){
+							neighbors[x1][indexes[x1]] = x2;
+							indexes[x1]++;
 						}
-						j++;
+						if(indexes[x2] < NUMBER_OF_NIEGHBORS){
+							neighbors[x2][indexes[x2]] = x1;
+							indexes[x2]++;
+						}
+						if(allDone(indexes)) break;
 					}
-					while(j<numNodes){
-						if (i != j){
-							if(q.peek().distance > distanceMatrix[i][j]){
-								q.remove();
+				}else{
+					for(int i=0;i<numNodes;i++){
+						PriorityQueue<Node> q = new PriorityQueue<Node>();
+						int j = 0;
+						while(q.size()<NUMBER_OF_NIEGHBORS){
+							if (i != j){
 								q.add(new Node(distanceMatrix[i][j], j));
 							}
+							j++;
 						}
-						j++;
-					}
-					for (int x=NUMBER_OF_NIEGHBORS-1; x >= 0 ; x--) {
-						neighbors[i][x] = q.remove().number;
+						while(j<numNodes){
+							if (i != j){
+								if(q.peek().distance > distanceMatrix[i][j]){
+									q.remove();
+									q.add(new Node(distanceMatrix[i][j], j));
+								}
+							}
+							j++;
+						}
+						for (int x=NUMBER_OF_NIEGHBORS-1; x >= 0 ; x--) {
+							neighbors[i][x] = q.remove().number;
+						}
 					}
 				}
 			}
@@ -593,6 +611,13 @@ public class TspMainRoundTwo {
 		double dy = y1 - y2;
 
 		return (int) Math.round(Math.sqrt(dx * dx + dy * dy));
+	}
+	
+	private boolean allDone(int[] indexes) {
+		for(int i : indexes){
+			if(i != NUMBER_OF_NIEGHBORS) return false;
+		}
+		return true;
 	}
 	
 	@SuppressWarnings("unused")
