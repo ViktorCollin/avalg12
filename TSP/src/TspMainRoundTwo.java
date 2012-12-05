@@ -19,8 +19,8 @@ public class TspMainRoundTwo {
 	private static final long START_TIME = System.currentTimeMillis();
 	private static final long END_TIME = START_TIME + 1700L;
 	private static final boolean ALL = false;
-	private static final boolean GREEDY = false;
-	private static final boolean STUPID_FAST = true;
+	private static final boolean GREEDY = true;
+	private static final boolean STUPID_FAST = false;
 	private static final boolean USE_TWO_OPT = true;
 	
 	
