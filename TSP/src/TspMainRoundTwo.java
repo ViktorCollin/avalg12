@@ -16,13 +16,12 @@ public class TspMainRoundTwo {
 	private static int NUMBER_OF_TRIES_RND = 200;
 	private int NUMBER_OF_NIEGHBORS = 20;
 	private static boolean BENCHMARK = false;
-	private static final double KVOT_NN = 0.5;
 	private static final long START_TIME = System.currentTimeMillis();
-	private static final long END_TIME = START_TIME + 1500L;
-	private static final long FIRST_THRES = Math.round(START_TIME + (END_TIME-START_TIME)*KVOT_NN);
-	private static final boolean ALL = true;
+	private static final long END_TIME = START_TIME + 1700L;
+	private static final boolean ALL = false;
 	private static final boolean GREEDY = false;
-	private static final boolean STUPID_FAST = false;
+	private static final boolean STUPID_FAST = true;
+	private static final boolean USE_TWO_OPT = true;
 	
 	
 	private Edge[] edges;
@@ -166,14 +165,17 @@ public class TspMainRoundTwo {
 			if (visulize) {
 				graph.drawEdges(bestTour, "Initial guess: GR");
 			}
-			bestTour = twoOpt(bestTour);
+			if (USE_TWO_OPT)
+				bestTour = twoOpt(bestTour);
 			bestCost = calculateCostVer2(bestTour);
 		} else if(STUPID_FAST){
 			bestTour = stupidfast();
 			if (visulize) {
 				graph.drawEdges(bestTour, "Initial guess: SF");
 			}
-			bestTour = twoOpt(bestTour);
+			
+			if (USE_TWO_OPT)
+				bestTour = twoOpt(bestTour);
 			bestCost = calculateCostVer2(bestTour);
 		} else {
 			//while (System.currentTimeMillis() < FIRST_THRES || (visulize && NUMBER_OF_TRIES_NN > tries++)) {
@@ -186,7 +188,8 @@ public class TspMainRoundTwo {
 				}
 		
 				// Step 2 - 2-opt
-				g = twoOpt(g);
+				if (USE_TWO_OPT)
+					g = twoOpt(g);
 		
 				
 				// Step 3 - Better than before?
