@@ -75,6 +75,51 @@ public class SwapTest {
 
 		}
 	}
+	
+	public static int[] stupidSwap(int[] g, int x1, int y1) {
+		int[] g2 = Arrays.copyOf(g, g.length);
+		int p = x1;
+		g2[p] = y1;
+		
+		while ((p = g[p]) != y1) {
+			
+			g2[g[p]] = p;
+			
+		}
+		
+		g2[g[x1]] = g[y1];
+				
+		
+		return g2;
+	}
+	
+	public static int[] smartSwap(int[] g, int x1, int y1){
+		//System.out.print("SMART SWAP START g: ");
+		//System.out.println(Arrays.toString(g));
+		int p = x1;
+		//System.out.println("x1 = " + x1 + ", y1 = " +y1);
+		int oldP = g[p];
+		g[p] = y1;
+		//System.out.println("f1: g[" +p + "] = "+y1);
+		p = oldP;
+		oldP = g[oldP];
+		g[p] = g[y1];
+		//System.out.println("f2: g[" +p + "] = "+g[y1]);
+		int newP = g[oldP];
+		while(p != y1){
+			g[oldP] = p;
+		//	System.out.println("w: g[" +g[oldP] + "] = "+p);
+			p = oldP;
+			oldP = newP;
+			newP = g[newP];
+			
+		}
+		//g[g[x1]] = y1;
+		//System.out.println("l: g[" +g[x1] + "] = "+y1);
+		//System.out.print("SMART SWAP SLUT  g: ");
+		//System.out.println(Arrays.toString(g));
+		return g;
+	}
 
 	public static boolean isEqual(int[] xs, int[] ys) {
 		int offset = Integer.MAX_VALUE;
@@ -109,17 +154,18 @@ public class SwapTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		int[] xs = new int[] {2, 9, 3, 12, 1, 5, 13};
+		int[] xs = new int[] {1, 4, 0, 2, 6, 3, 5};
 		int[] ys = Arrays.copyOf(xs, xs.length);
 
-		int x = 6;
-		int y = 0;
+		int x = 1;
+		int y = 3;
 		
-		oldSwap(xs, x, y);
-		swapHelper(ys, x, y, true);
-
-		System.out.println(Arrays.toString(ys));
-		System.out.println(Arrays.toString(xs));
+		stupidSwap(xs, x, y);
+		smartSwap(ys, x, y);
+		
+		System.out.println("STUPID: "+ Arrays.toString(xs));
+		System.out.println("SMART : "+ Arrays.toString(ys));
+		
 		System.out.println(isEqual(xs, ys));
 	}
 

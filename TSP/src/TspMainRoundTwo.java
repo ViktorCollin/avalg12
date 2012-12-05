@@ -10,17 +10,19 @@ import java.util.Random;
 public class TspMainRoundTwo {
 	private static final boolean USE_RANDOM_IN_INIT = true;
 	private static final boolean USE_NEIGHBORS = true;
+	private static final boolean USE_RANDOM = true;
 	protected static boolean DEBUG = false;
-	private static int NUMBER_OF_TRIES_2OPT = 20;
-	private static int NUMBER_OF_TRIES_RND = 20;
-	private int NUMBER_OF_NIEGHBORS = 25;
+	private static int NUMBER_OF_TRIES_NN = 20;
+	private static int NUMBER_OF_TRIES_RND = 200;
+	private int NUMBER_OF_NIEGHBORS = 20;
 	private static boolean BENCHMARK = false;
-	private static final double KVOT_2OPT = 0.5;
+	private static final double KVOT_NN = 0.5;
 	private static final long START_TIME = System.currentTimeMillis();
-	private static final long END_TIME = START_TIME + 1700L;
-	private static final long FIRST_THRES = Math.round(START_TIME + (END_TIME-START_TIME)*KVOT_2OPT);
+	private static final long END_TIME = START_TIME + 1500L;
+	private static final long FIRST_THRES = Math.round(START_TIME + (END_TIME-START_TIME)*KVOT_NN);
+	private static final boolean ALL = true;
 	private static final boolean GREEDY = false;
-	private static final boolean STUPID_FAST = true;
+	private static final boolean STUPID_FAST = false;
 	
 	
 	private Edge[] edges;
@@ -36,6 +38,7 @@ public class TspMainRoundTwo {
 	int[] indexes;
 	newVisulizer graph;
 	boolean visulize = false;
+	
 
 	/**
 	 * @param args
@@ -80,7 +83,7 @@ public class TspMainRoundTwo {
 			in.close();
 			
 			int edges_x = 0;
-			if (GREEDY) 
+			if (GREEDY || ALL) 
 				edges = new Edge[numNodes * (numNodes-1) / 2];
 			
 			for (int i = 0; i < numNodes; i++) {
@@ -88,14 +91,14 @@ public class TspMainRoundTwo {
 					distanceMatrix[i][j] = calcDistance(nodesX[i], nodesY[i], nodesX[j], nodesY[j]);
 					distanceMatrix[j][i] = distanceMatrix[i][j];
 
-					if (GREEDY) {
+					if (GREEDY || ALL) {
 						edges[edges_x++] = new Edge(i, j, distanceMatrix[i][j]);
 					}
 
 				}
 			}
 
-			if (GREEDY)
+			if (GREEDY || ALL)
 				Arrays.sort(edges);
 			if(USE_NEIGHBORS){
 				for(int i=0;i<numNodes;i++){
@@ -139,20 +142,32 @@ public class TspMainRoundTwo {
 		int tries = 0;
 		
 		
-		if (GREEDY) {
+		if (ALL) {
+			bestTour = twoOpt(greedy());
+			bestCost = calculateCostVer2(bestTour);
+			if(DEBUG) System.out.println("Cost for GR: "+bestCost);
+			
+			g = twoOpt(nerestNeighbor());
+			int cost = calculateCostVer2(g);
+			if(DEBUG) System.out.println("Cost for NN: "+cost);
+			if (cost < bestCost) {
+				bestTour = g;
+				bestCost = cost;
+			}
+			g = twoOpt(stupidfast());
+			cost = calculateCostVer2(g);
+			if(DEBUG) System.out.println("Cost for SF: "+cost);
+			if (cost < bestCost) {
+				bestTour = g;
+				bestCost = cost;
+			}
+		}else if(GREEDY){
 			bestTour = greedy();
 			if (visulize) {
 				graph.drawEdges(bestTour, "Initial guess: GR");
 			}
 			bestTour = twoOpt(bestTour);
 			bestCost = calculateCostVer2(bestTour);
-			
-			g = twoOpt(nerestNeighbor());
-			int cost = calculateCostVer2(g);
-			if (cost < bestCost) {
-				bestTour = g;
-				bestCost = cost;
-			}
 		} else if(STUPID_FAST){
 			bestTour = stupidfast();
 			if (visulize) {
@@ -161,8 +176,9 @@ public class TspMainRoundTwo {
 			bestTour = twoOpt(bestTour);
 			bestCost = calculateCostVer2(bestTour);
 		} else {
-			while (System.currentTimeMillis() < FIRST_THRES || (visulize && NUMBER_OF_TRIES_2OPT > tries++)) {
-				// Step 1 - Initial tour
+			//while (System.currentTimeMillis() < FIRST_THRES || (visulize && NUMBER_OF_TRIES_NN > tries++)) {
+				for(int i = 0; i<NUMBER_OF_TRIES_NN;i++){
+			// Step 1 - Initial tour
 				g = nerestNeighbor();
 				
 				if (visulize) {
@@ -193,22 +209,28 @@ public class TspMainRoundTwo {
 			System.out.println(" -- STEP 4 --");
 		
 		// Step 4 - Random swap + 2opt
-		tries = 0;
-		while (System.currentTimeMillis() < END_TIME || (visulize && NUMBER_OF_TRIES_RND > tries++)) {
-			g = twoOpt(randomSwap(Arrays.copyOf(bestTour, bestTour.length)));
-			int cost = calculateCostVer2(g);
-			
-			if (cost < bestCost) {
-				bestTour = g;
-				bestCost = cost;
+		if(USE_RANDOM){
+			tries = 0;
+			int betters = 0;
+			while (System.currentTimeMillis() < END_TIME || (visulize && NUMBER_OF_TRIES_RND > tries++)) {
+				g = twoOpt(randomSwap(Arrays.copyOf(bestTour, bestTour.length)));
+				int cost = calculateCostVer2(g);
 
-				if (DEBUG) {
-					System.out.println("Better! ");
+				if (cost < bestCost) {
+					bestTour = g;
+					bestCost = cost;
+					betters++;
+
+					if (DEBUG) {
+						System.out.println("Better! ");
+					}
 				}
+
 			}
-			
+			if(visulize){
+				graph.drawEdges(bestTour, "Best so far "+betters+"/"+NUMBER_OF_TRIES_RND+ " randoms was succesful");
+			}
 		}
-		
 		if (BENCHMARK) {
 			System.out.println(bestCost);
 		} else {
@@ -230,7 +252,7 @@ public class TspMainRoundTwo {
 			y2 = g[y1];
 		}
 		
-		return stupidSwap(g, x1, y1);
+		return smartSwap(g, x1, y1);
 	}
 	
 	private int[] greedy() {
@@ -379,10 +401,18 @@ public class TspMainRoundTwo {
 	
 	private int[] stupidfast(){
 		int[] g = new int[numNodes];
-		for(int i=0;i<numNodes-1;i++){
-			g[i] = i+1;
+		int i=0;
+		for(;i<(numNodes-1)%5;){
+			g[i] = ++i;
 		}
-		g[numNodes-1] = 0;
+		for(;i<numNodes-1;){
+			g[i] = ++i;
+			g[i] = ++i;
+			g[i] = ++i;
+			g[i] = ++i;
+			g[i] = ++i;
+		}
+		//g[numNodes-1] = 0; 'r redan noll vid initsiering
 		return g;
 	}
 
@@ -473,7 +503,7 @@ public class TspMainRoundTwo {
 					int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
 
 					if (new_cost < old_cost) {
-						return stupidSwap(g, x1, y1);
+						return smartSwap(g, x1, y1);
 					}
 				}
 			} else{
@@ -488,7 +518,7 @@ public class TspMainRoundTwo {
 					int new_cost = distanceMatrix[x1][y1] + distanceMatrix[y2][x2];
 
 					if (new_cost < old_cost) {
-						return stupidSwap(g, x1, y1);
+						return smartSwap(g, x1, y1);
 					}
 				}
 			}
@@ -513,6 +543,23 @@ public class TspMainRoundTwo {
 				
 		
 		return g2;
+	}
+	public int[] smartSwap(int[] g, int x1, int y1){
+		int p = x1;
+		int oldP = g[p];
+		g[p] = y1;
+		p = oldP;
+		oldP = g[oldP];
+		g[p] = g[y1];
+		int newP = g[oldP];
+		while(p != y1){
+			g[oldP] = p;
+			p = oldP;
+			oldP = newP;
+			newP = g[newP];
+			
+		}
+		return g;
 	}
 	
 	private void printTour(int[] g) {
